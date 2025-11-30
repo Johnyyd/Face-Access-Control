@@ -49,10 +49,10 @@ models/*.pickle
 # Keep model directory structure
 !models/.gitkeep
 
-# Dataset (personal data)
-dataset/*
-!dataset/.gitkeep
-!dataset/minhtri/.gitkeep
+# # Dataset (personal data)
+# dataset/*
+# !dataset/.gitkeep
+# !dataset/minhtri/.gitkeep
 
 # Logs
 logs/*.csv
