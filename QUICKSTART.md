@@ -1,197 +1,51 @@
 # Quick Start Guide
 
-Hướng dẫn nhanh để bắt đầu với Face Access Control System.
-
-## 🚀 5 Bước Nhanh
-
-### 1️⃣ Cài Đặt Dependencies
+## Bước 1: Cài đặt
 
 ```bash
 pip install -r requirements.txt
+pip install "numpy<2.0"
 ```
 
-### 2️⃣ Download Models
-
-```bash
-python download_models.py
-```
-
-Hoặc download thủ công theo [MODELS_DOWNLOAD.md](MODELS_DOWNLOAD.md)
-
-### 3️⃣ Chuẩn Bị Dataset
-
-**Option A: Capture từ webcam**
+## Bước 2: Chụp Dataset
 
 ```bash
 python capture_dataset.py
 ```
 
-**Option B: Copy ảnh thủ công**
+- Nhập tên user
+- Chụp 15-20 ảnh (nhiều góc độ)
+- Ảnh lưu vào `dataset/[username]/`
 
-```
-dataset/
-├── User1/
-│   └── (10-20 ảnh)
-└── User2/
-    └── (10-20 ảnh)
-```
-
-Xem chi tiết: [DATASET_GUIDE.md](DATASET_GUIDE.md)
-
-### 4️⃣ Training
-
-**LBPH (Nhanh)**:
+## Bước 3: Train Models
 
 ```bash
-python train_lbph.py
+python train_lbph.py      # LBPH (nhanh)
+python train_openface.py  # OpenFace (chính xác)
 ```
 
-**FaceNet (Chính xác)**:
-
-```bash
-python train_facenet.py
-```
-
-### 5️⃣ Chạy Ứng Dụng
+## Bước 4: Chạy App
 
 ```bash
 python main.py
 ```
 
----
+## Controls trong GUI
 
-## 📋 Checklist Đầy Đủ
+- Chọn Recognition Method: LBPH hoặc OpenFace
+- Chọn Detection Method: Haar Cascade hoặc DNN
+- Điều chỉnh Threshold bằng slider
+- Click Start để bắt đầu
 
-### Trước Khi Bắt Đầu
+## Tips
 
-- [ ] Python 3.8+ đã cài đặt
-- [ ] Webcam hoạt động
-- [ ] Git clone repository
+- **LBPH**: Nhanh (30-40 FPS), accuracy 70-85%
+- **OpenFace**: Chính xác (85-95%), chậm hơn (10-15 FPS)
+- **Threshold thấp** = strict hơn, ít false positives
+- **Threshold cao** = loose hơn, ít false negatives
 
-### Setup
+## Troubleshooting
 
-- [ ] Cài dependencies: `pip install -r requirements.txt`
-- [ ] Download Haar Cascade model
-- [ ] (Optional) Download DNN models
-- [ ] (Cho FaceNet) Download FaceNet model
-
-### Dataset
-
-- [ ] Tạo thư mục cho mỗi user trong `dataset/`
-- [ ] Mỗi user có 10-20 ảnh
-- [ ] Chạy `python check_dataset.py` để validate
-
-### Training
-
-- [ ] Chạy `python train_lbph.py` (hoặc `train_facenet.py`)
-- [ ] Verify model files được tạo trong `models/`
-
-### Run
-
-- [ ] Chạy `python main.py`
-- [ ] Test với known users
-- [ ] Test với unknown faces
-
----
-
-## 🎯 Workflow Chuẩn
-
-```mermaid
-graph TD
-    A[Clone Repository] --> B[Install Dependencies]
-    B --> C[Download Models]
-    C --> D[Prepare Dataset]
-    D --> E[Validate Dataset]
-    E --> F{Valid?}
-    F -->|No| D
-    F -->|Yes| G[Train Model]
-    G --> H[Run Application]
-    H --> I[Test & Verify]
-```
-
----
-
-## 💡 Tips
-
-### Để Có Độ Chính Xác Cao
-
-1. Chụp 15-20 ảnh/người
-2. Đa dạng góc độ và ánh sáng
-3. Sử dụng FaceNet thay vì LBPH
-4. Sử dụng DNN detection thay vì Haar
-
-### Để Có Tốc Độ Nhanh
-
-1. Sử dụng LBPH
-2. Sử dụng Haar Cascade
-3. Giảm resolution camera
-4. Giảm số lượng ảnh training
-
-### Troubleshooting Nhanh
-
-- **Camera không mở**: Thay đổi `CAMERA_ID` trong `config.py`
-- **Model không load**: Kiểm tra đã chạy training chưa
-- **Độ chính xác thấp**: Tăng số ảnh training, thử FaceNet
-- **FPS thấp**: Giảm resolution, dùng LBPH + Haar
-
----
-
-## 📚 Tài Liệu Chi Tiết
-
-- [README.md](README.md) - Tổng quan hệ thống
-- [MODELS_DOWNLOAD.md](MODELS_DOWNLOAD.md) - Hướng dẫn download models
-- [DATASET_GUIDE.md](DATASET_GUIDE.md) - Hướng dẫn chuẩn bị dataset
-- [TEAM_DIVISION.md](TEAM_DIVISION.md) - Phân chia công việc team
-- [description.md](description.md) - Mô tả kỹ thuật chi tiết
-
----
-
-## 🆘 Cần Giúp Đỡ?
-
-### Scripts Hỗ Trợ
-
-- `python download_models.py` - Download models tự động
-- `python capture_dataset.py` - Chụp ảnh từ webcam
-- `python check_dataset.py` - Kiểm tra dataset
-- `python train_lbph.py` - Training LBPH
-- `python train_facenet.py` - Training FaceNet
-- `python main.py` - Chạy ứng dụng
-
-### Kiểm Tra Từng Bước
-
-```bash
-# 1. Kiểm tra Python
-python --version
-
-# 2. Kiểm tra dependencies
-pip list | grep opencv
-
-# 3. Kiểm tra models
-ls models/
-
-# 4. Kiểm tra dataset
-python check_dataset.py
-
-# 5. Test camera
-python modules/camera.py
-
-# 6. Test detector
-python modules/detector.py
-```
-
----
-
-## ⏱️ Thời Gian Ước Tính
-
-| Bước                      | Thời gian      |
-| ------------------------- | -------------- |
-| Cài đặt dependencies      | 5-10 phút      |
-| Download models           | 2-5 phút       |
-| Capture dataset (2 users) | 5-10 phút      |
-| Training LBPH             | < 1 phút       |
-| Training FaceNet          | 2-5 phút       |
-| **Tổng**                  | **15-30 phút** |
-
----
-
-**Chúc bạn thành công! 🎉**
+- **OpenFace lỗi**: Chạy `pip install "numpy<2.0"`
+- **Camera không mở**: Đổi `CAMERA_ID` trong config.py
+- **Accuracy thấp**: Chụp thêm ảnh, nhiều góc độ hơn
