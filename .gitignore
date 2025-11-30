@@ -1,0 +1,78 @@
+# Face Access Control - .gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+ENV/
+env/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Models (too large for git)
+models/*.xml
+models/*.prototxt
+models/*.caffemodel
+models/*.h5
+models/*.yml
+models/*.pickle
+
+# Keep model directory structure
+!models/.gitkeep
+
+# Dataset (personal data)
+dataset/*
+!dataset/.gitkeep
+!dataset/User_A/.gitkeep
+!dataset/User_B/.gitkeep
+
+# Logs
+logs/*.csv
+!logs/.gitkeep
+
+# Temporary files
+*.tmp
+*.bak
+*.log
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Detected faces (if enabled)
+detected_faces/
