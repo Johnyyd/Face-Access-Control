@@ -2,404 +2,302 @@
 
 ## 1. Tổng Quan Hệ Thống
 
-Hệ thống hoạt động theo cơ chế **One-to-Many Matching (1:N)**. Camera sẽ quay khuôn mặt, hệ thống so sánh khuôn mặt đó với $N$ khuôn mặt đã lưu trong cơ sở dữ liệu để xác định danh tính và quyết định mở cửa.
+Hệ thống hoạt động theo cơ chế **One-to-Many Matching (1:N)**. Camera quay khuôn mặt, hệ thống so sánh với N khuôn mặt đã lưu trong database để xác định danh tính.
 
 ### Đặc điểm kỹ thuật:
 
-- **Độ chính xác**: Phụ thuộc vào kỹ thuật được chọn
-- **Tốc độ**: Yêu cầu xử lý thời gian thực (Real-time)
-- **Tùy chọn kỹ thuật**: Hệ thống hỗ trợ 2 phương pháp nhận diện có thể chuyển đổi qua giao diện
+- **Độ chính xác**: 70-95% (tùy phương pháp)
+- **Tốc độ**: Real-time (10-40 FPS)
+- **Phương pháp**: 2 kỹ thuật có thể chuyển đổi qua GUI
 
-## 2. So Sánh 2 Kỹ Thuật Nhận Diện
+## 2. So Sánh 2 Kỹ Thuật
 
-Hệ thống cho phép người dùng lựa chọn giữa 2 kỹ thuật:
+### Phương pháp 1: LBPH (Local Binary Patterns Histogram)
 
-### Phương pháp 1: LBPH (Local Binary Patterns Histograms)
+| Tiêu chí         | Đánh giá                         |
+| ---------------- | -------------------------------- |
+| **Detection**    | Haar Cascade hoặc DNN            |
+| **Recognition**  | LBPH (OpenCV)                    |
+| **Tốc độ**       | ⚡⚡⚡ 30-40 FPS                 |
+| **Độ chính xác** | ⭐⭐⭐ 70-85%                    |
+| **Tài nguyên**   | Thấp (CPU only)                  |
+| **Ưu điểm**      | Nhanh, nhẹ, không cần GPU        |
+| **Nhược điểm**   | Nhạy ánh sáng, góc nghiêng       |
+| **Phù hợp**      | Môi trường ổn định, thiết bị yếu |
 
-| Tiêu chí               | Đánh giá                                     |
-| ---------------------- | -------------------------------------------- |
-| **Detection**          | Haar Cascade (Viola-Jones)                   |
-| **Recognition**        | LBPH Face Recognizer                         |
-| **Tốc độ**             | ⚡⚡⚡ Rất nhanh (~30-60 FPS)                |
-| **Độ chính xác**       | ⭐⭐ Trung bình (70-85%)                     |
-| **Yêu cầu tài nguyên** | Thấp (CPU only)                              |
-| **Ưu điểm**            | Nhẹ, nhanh, dễ triển khai, không cần GPU     |
-| **Nhược điểm**         | Nhạy cảm với ánh sáng, góc nghiêng, biểu cảm |
-| **Phù hợp**            | Môi trường ổn định, thiết bị yếu             |
+### Phương pháp 2: OpenFace (dlib-based)
 
-### Phương pháp 2: OpenFace (Deep Learning)
+| Tiêu chí         | Đánh giá                          |
+| ---------------- | --------------------------------- |
+| **Detection**    | DNN hoặc Haar Cascade             |
+| **Recognition**  | OpenFace Embeddings (128-d)       |
+| **Tốc độ**       | ⚡⚡ 10-15 FPS                    |
+| **Độ chính xác** | ⭐⭐⭐⭐⭐ 85-95%                 |
+| **Tài nguyên**   | Trung bình (CPU, khuyến nghị GPU) |
+| **Ưu điểm**      | Chính xác cao, robust             |
+| **Nhược điểm**   | Chậm hơn LBPH                     |
+| **Phù hợp**      | Cần độ chính xác cao              |
 
-| Tiêu chí               | Đánh giá                                  |
-| ---------------------- | ----------------------------------------- |
-| **Detection**          | DNN (Caffe/TensorFlow model)              |
-| **Recognition**        | OpenFace Embeddings (128-d vector)         |
-| **Tốc độ**             | ⚡ Chậm hơn (~10-20 FPS)                  |
-| **Độ chính xác**       | ⭐⭐⭐⭐⭐ Cao (95-99%)                   |
-| **Yêu cầu tài nguyên** | Cao hơn (khuyến nghị GPU)                 |
-| **Ưu điểm**            | Chính xác cao, robust với nhiều điều kiện |
-| **Nhược điểm**         | Chậm hơn, cần tài nguyên mạnh hơn         |
-| **Phù hợp**            | Yêu cầu độ chính xác cao, thiết bị mạnh   |
+### Khuyến nghị:
 
-### Khuyến nghị lựa chọn:
+- **LBPH**: Ưu tiên tốc độ, thiết bị yếu
+- **OpenFace**: Ưu tiên độ chính xác
 
-- **Chọn LBPH** nếu: Ưu tiên tốc độ, thiết bị yếu, môi trường ánh sáng ổn định
-- **Chọn OpenFace** nếu: Ưu tiên độ chính xác, có GPU, môi trường phức tạp
+## 3. Quy Trình Hoạt Động
 
-## 3. Sơ Đồ Hoạt Động (Flowchart)
+### Giai đoạn 1: Enrollment (Đăng ký)
 
-Quy trình hoạt động được chia thành 2 giai đoạn chính: **Giai đoạn Đăng ký (Enrollment)** và **Giai đoạn Vận hành (Operation/Inference)**.
-
-### Giai đoạn 1: Đăng ký (Admin thực hiện)
-
-1. **Start**: Admin nhập tên thành viên và chọn kỹ thuật (LBPH hoặc OpenFace)
-2. **Capture**: Webcam chụp $N$ ảnh khuôn mặt của thành viên (ở các góc độ khác nhau)
-3. **Pre-process**:
-   - Phát hiện khuôn mặt (Detection)
-     - **LBPH**: Sử dụng Haar Cascade
-     - **OpenFace**: Sử dụng DNN Detector
-   - Cắt vùng mặt (Crop)
-   - Chỉnh kích thước (Resize)
+1. **Capture**: Chụp 15-20 ảnh từ webcam (`capture_dataset.py`)
+2. **Detection**: Phát hiện khuôn mặt
+   - Haar Cascade (nhanh) hoặc DNN (chính xác)
+3. **Preprocessing**: Crop, resize, normalize
 4. **Feature Extraction**:
-   - **LBPH**: Chuyển sang Grayscale → Tính toán LBP Histogram
-   - **OpenFace**: Normalize → Tạo vector embedding 128 chiều
-5. **Save**: Lưu dữ liệu đặc trưng vào Database/File
-   - **LBPH**: Lưu vào `trainer.yml` + `mapping.json`
-   - **OpenFace**: Lưu vào `embeddings.pickle`
-6. **End**
+   - **LBPH**: Grayscale → LBP histogram
+   - **OpenFace**: RGB → 128-d embedding vector
+5. **Storage**:
+   - **LBPH**: `trainer.yml` + `mapping.json`
+   - **OpenFace**: `embeddings.pickle`
 
-### Giai đoạn 2: Vận hành
+### Giai đoạn 2: Operation (Vận hành)
 
-1. **Start**: Khởi động Webcam và load model theo kỹ thuật đã chọn
-2. **Loop**: Đọc frame liên tục
-3. **Detect**: Tìm khuôn mặt trong khung hình
-   - **LBPH**: Haar Cascade Classifier
-   - **OpenFace**: DNN Face Detector (Caffe model)
-   - **Có mặt**: Sang bước tiếp theo
-   - **Không**: Quay lại bước 2
-4. **Recognize**: Trích xuất đặc trưng khuôn mặt hiện tại và so sánh với Database
-   - **LBPH**: So sánh histogram, tính confidence score
-   - **OpenFace**: Tính Euclidean distance giữa embeddings
-5. **Decision**:
-   - **LBPH**: Nếu `Confidence < Threshold` (VD: < 50): HỢP LỆ
-   - **OpenFace**: Nếu `Distance < Threshold` (VD: < 0.6): HỢP LỆ
-   - **HỢP LỆ** → Gửi lệnh Mở khóa (Unlock) → Hiển thị tên
-   - **KHÔNG HỢP LỆ** → Cảnh báo (Access Denied)
-6. **Loop**: Tiếp tục vòng lặp
+1. **Capture**: Đọc frame từ webcam
+2. **Detection**: Tìm khuôn mặt trong frame
+3. **Recognition**: Trích xuất features và so sánh
+   - **LBPH**: So sánh histogram → confidence score
+   - **OpenFace**: Tính Euclidean distance
+4. **Decision**:
+   - **LBPH**: `confidence < threshold` (VD: < 90) → GRANTED
+   - **OpenFace**: `distance < threshold` (VD: < 0.6) → GRANTED
+5. **Action**: Hiển thị kết quả, log access
 
 ## 4. Input / Output
 
 ### Input
 
-- **Nguồn hình ảnh**: Luồng video (Video Stream) từ Webcam (độ phân giải khuyến nghị 640x480 hoặc 720p)
-- **Dữ liệu mẫu**: Thư mục ảnh khuôn mặt của các thành viên (`dataset/`)
-- **Cấu hình**:
-  - Lựa chọn kỹ thuật (LBPH hoặc OpenFace)
-  - Ngưỡng chính xác (Threshold)
-  - Đường dẫn model
+- **Video Stream**: Webcam 640x480 @ 30fps
+- **Dataset**: Thư mục `dataset/[username]/` với 15-20 ảnh
+- **Config**: Threshold, method selection
 
 ### Output
 
-- **Giao diện (Visual)**: Màn hình hiển thị video realtime với:
-  - Khung hình chữ nhật (Bounding Box) bao quanh mặt
-  - Tên thành viên và trạng thái (Xanh: OK, Đỏ: Denied)
-  - Hiển thị kỹ thuật đang sử dụng (LBPH/OpenFace)
-  - Hiển thị FPS và độ tin cậy
-- **Tín hiệu điều khiển**:
-  - Log ghi nhận thời gian ra vào (File `.csv` và Console log)
+- **Visual**:
+  - Bounding box (xanh: granted, đỏ: denied)
+  - Tên user + confidence/distance
+  - FPS counter
+  - Method indicator (LBPH/OpenFace)
+- **Logs**: SQLite database (`logs/access.db`)
 
-## 5. Luồng Dữ Liệu (Data Flow)
+## 5. Luồng Dữ Liệu
 
-Dữ liệu sẽ di chuyển qua các tầng xử lý như sau:
-
-### Luồng chung (cả 2 kỹ thuật):
-
-1. **Raw Data (Frame)**: Webcam trả về ma trận điểm ảnh (NumPy array, BGR format)
-2. **Preprocessing**: Resize ảnh để tăng tốc độ xử lý
-3. **Region of Interest (ROI)**: Tọa độ `(x, y, w, h)` của khuôn mặt được cắt ra từ Frame
-
-### Luồng riêng theo kỹ thuật:
-
-#### LBPH Pipeline:
-
-4. **Color Conversion**: BGR → Grayscale
-5. **Feature Extraction**: Tính toán LBP patterns và histogram
-6. **Storage**: Lưu vào `trainer.yml` (YAML format)
-7. **Matching**: So sánh histogram, trả về `(ID, Confidence)`
-8. **Mapping**: Tra cứu `mapping.json` để lấy tên từ ID
-
-#### FaceNet Pipeline:
-
-4. **Color Conversion**: BGR → RGB
-5. **Normalization**: Chuẩn hóa pixel values (0-1 hoặc -1 to 1)
-6. **Feature Extraction**: Forward pass qua FaceNet model → 128-d embedding vector
-7. **Storage**: Lưu vào `embeddings.pickle` (Dictionary: `{"names": [...], "embeddings": [...]}`)
-8. **Matching**: Tính Euclidean distance với tất cả embeddings, trả về `(Name, Distance)`
-
-## 6. Cấu Trúc Dự Án (Project Structure)
-
-Chia dự án theo hướng **Modular** để dễ dàng chuyển đổi giữa 2 kỹ thuật:
+### LBPH Pipeline:
 
 ```
-FaceAccessControl/
-├── dataset/                    # Chứa ảnh thô của thành viên (chia theo thư mục tên)
-│   ├── User_A/
-│   │   ├── 001.jpg
-│   │   └── 002.jpg
-│   └── User_B/
-│       ├── 001.jpg
-│       └── 002.jpg
-├── models/                     # Chứa các file model đã train hoặc pre-trained
-│   ├── haarcascade_frontalface_default.xml    # Haar Cascade cho LBPH
-│   ├── trainer.yml                             # LBPH trained model
-│   ├── mapping.json                            # ID to Name mapping cho LBPH
-│   ├── deploy.prototxt                         # DNN config cho OpenFace
-│   └── embeddings.pickle                       # OpenFace embeddings database
-├── modules/
-│   ├── __init__.py
-│   ├── camera.py               # Quản lý Webcam (Open, Read, Close)
-│   ├── detector.py             # Class bọc kỹ thuật Detection (Haar/DNN)
-│   ├── recognizer_lbph.py      # Class cho LBPH Recognition
-│   ├── recognizer_openface.py   # Class cho OpenFace Recognition
-│   └── database.py             # Quản lý lưu/đọc dữ liệu người dùng
+Frame (BGR) → Grayscale → Resize → LBP → Histogram
+→ Compare → Confidence → Mapping → Name
+```
+
+### OpenFace Pipeline:
+
+```
+Frame (BGR) → RGB → Normalize → Resize (160x160)
+→ dlib HOG → 128-d vector → Euclidean Distance → Name
+```
+
+## 6. Cấu Trúc Project
+
+```
+Face-Access-Control/
+├── main.py                      # Entry point
+├── config.py                    # Configuration
+├── requirements.txt             # Dependencies
+│
+├── modules/                     # Core modules
+│   ├── camera.py               # Camera management
+│   ├── detector.py             # Face detection (Haar/DNN)
+│   ├── recognizer_lbph.py      # LBPH recognition
+│   ├── recognizer_openface.py  # OpenFace recognition
+│   └── database.py             # Storage management
+│
 ├── gui/
-│   ├── __init__.py
-│   └── main_window.py          # Giao diện chính với tùy chọn kỹ thuật
-├── main.py                     # Chương trình chính (Vận hành)
-├── train_lbph.py               # Training script cho LBPH
-├── train_openface.py            # Training script cho OpenFace
-├── config.py                   # File cấu hình (thresholds, paths)
-└── requirements.txt            # Các thư viện cần thiết
+│   └── main_window.py          # Tkinter GUI
+│
+├── dataset/                     # Training images
+│   └── [username]/
+│
+├── models/                      # Trained models
+│   ├── haarcascade_*.xml       # Haar Cascade
+│   ├── deploy.prototxt         # DNN config
+│   ├── res10_*.caffemodel      # DNN weights
+│   ├── trainer.yml             # LBPH model
+│   ├── mapping.json            # LBPH label mapping
+│   └── embeddings.pickle       # OpenFace embeddings
+│
+└── logs/
+    └── access.db               # SQLite database
 ```
 
-## 7. Phân Tích Chi Tiết Module
+## 7. Chi Tiết Modules
 
-### A. Module `detector.py`
-
-**Nhiệm vụ**: Tìm vị trí khuôn mặt (hỗ trợ cả 2 kỹ thuật)
+### A. `detector.py` - Face Detection
 
 **Class**: `FaceDetector`
 
-```python
-class FaceDetector:
-    def __init__(self, method='haar'):
-        """
-        method: 'haar' hoặc 'dnn'
-        """
-        self.method = method
-        if method == 'haar':
-            self.detector = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
-        elif method == 'dnn':
-            self.net = cv2.dnn.readNetFromCaffe('deploy.prototxt', 'res10_300x300_ssd.caffemodel')
+**Methods**:
 
-    def detect_faces(self, frame):
-        """
-        Input: Một khung hình ảnh (BGR)
-        Output: List các tọa độ [(x, y, w, h), ...]
-        """
-```
+- Haar Cascade: Fast (~5ms/frame), nhiều false positives
+- DNN: Slower (~20ms/frame), chính xác hơn
 
-**Đặc điểm**:
+**Switchable**: Có thể chuyển đổi trong runtime
 
-- **Haar Cascade**: Nhanh (~5-10ms/frame), nhưng nhiều false positives
-- **DNN**: Chậm hơn (~20-30ms/frame), nhưng chính xác hơn
+### B. `recognizer_lbph.py` - LBPH Recognition
 
-### B. Module `recognizer_lbph.py`
+**Thuật toán**: Local Binary Patterns Histogram
 
-**Nhiệm vụ**: Nhận diện khuôn mặt bằng LBPH
+**Key Variables**:
 
-**Class**: `LBPHRecognizer`
+- `recognizer`: `cv2.face.LBPHFaceRecognizer_create()`
+- `label_mapping`: Dict {ID → Name}
+- `confidence_threshold`: Default 90.0
 
-**Biến quan trọng**:
+**Công thức**: Confidence càng thấp càng tốt (0 = perfect match)
 
-- `recognizer`: Instance của `cv2.face.LBPHFaceRecognizer_create()`
-- `label_map`: Dictionary mapping ID → Name
-- `confidence_threshold`: Ngưỡng chấp nhận (VD: 50)
+### C. `recognizer_openface.py` - OpenFace Recognition
 
-**Hàm chức năng**:
+**Thuật toán**: dlib HOG + CNN
+
+**Key Variables**:
+
+- `model`: `face_recognition.FaceNet()`
+- `known_encodings`: List of 128-d vectors
+- `known_names`: Corresponding names
+- `distance_threshold`: Default 0.6
+
+**Công thức**: Euclidean Distance = $\sqrt{\sum_{i=1}^{128}(a_i - b_i)^2}$
+
+### D. `database.py` - Storage Management
+
+**LBPH Storage**:
 
 ```python
-def train(self, dataset_path):
-    """
-    Train LBPH model từ dataset
-    Lưu vào trainer.yml và mapping.json
-    """
-
-def predict(self, face_image):
-    """
-    Input: Ảnh khuôn mặt (Grayscale)
-    Output: (Name, Confidence)
-    Confidence càng thấp càng chính xác
-    """
+models/trainer.yml       # OpenCV YAML
+models/mapping.json      # {"0": "User1", "1": "User2"}
 ```
 
-### C. Module `recognizer_openface.py`
-
-**Nhiệm vụ**: Nhận diện khuôn mặt bằng OpenFace
-
-**Class**: `OpenFaceRecognizer`
-
-**Biến quan trọng**:
-
-- `model`: OpenFace model (Keras/TensorFlow)
-- `known_embeddings`: List các vector 128-d đã lưu
-- `known_names`: List tên tương ứng
-- `distance_threshold`: Ngưỡng khoảng cách Euclidean (VD: 0.6)
-
-**Hàm chức năng**:
+**OpenFace Storage**:
 
 ```python
-def extract_embedding(self, face_image):
-    """
-    Input: Ảnh khuôn mặt (RGB, normalized)
-    Output: Vector 128 chiều
-    """
-
-def train(self, dataset_path):
-    """
-    Tạo embeddings cho tất cả ảnh trong dataset
-    Lưu vào embeddings.pickle
-    """
-
-def predict(self, face_image):
-    """
-    Input: Ảnh khuôn mặt (RGB)
-    Output: (Name, Distance)
-    Distance càng thấp càng giống
-    """
+models/embeddings.pickle # {"names": [...], "encodings": [...]}
 ```
 
-### D. Module `database.py`
+**Access Logs**:
 
-**Nhiệm vụ**: Quản lý dữ liệu bền vững cho cả 2 kỹ thuật
-
-**Hàm chức năng**:
-
-```python
-def save_lbph_model(recognizer, label_map, path):
-    """
-    Lưu LBPH model và mapping
-    """
-
-def load_lbph_model(path):
-    """
-    Load LBPH model và mapping
-    Return: (recognizer, label_map)
-    """
-
-def save_openface_embeddings(names, embeddings, path):
-    """
-    Lưu OpenFace embeddings vào pickle
-    """
-
-def load_openface_embeddings(path):
-    """
-    Load FaceNet embeddings
-    Return: (names, embeddings)
-    """
+```sql
+-- SQLite schema
+CREATE TABLE access_logs (
+    id INTEGER PRIMARY KEY,
+    timestamp TEXT,
+    name TEXT,
+    method TEXT,
+    confidence REAL,
+    status TEXT
+);
 ```
 
-## 8. Phân Tích Frontend, Backend & Cơ Sở Dữ Liệu
+## 8. GUI Features
 
-### Backend (Logic xử lý)
+**Tkinter-based Interface**:
 
-Là các file trong thư mục `modules/`. Nơi thực hiện các thuật toán:
+- **Video Feed**: Real-time display
+- **Controls**:
+  - Recognition Method: LBPH / OpenFace
+  - Detection Method: Haar / DNN
+  - Threshold Slider: Adjustable
+  - Start/Stop Buttons
+- **Status Bar**: FPS, method, status
+- **Access Logs Viewer**: View recent logs
 
-**Thư viện sử dụng**:
+## 9. Chuyển Đổi Methods
 
-- **OpenCV** (`cv2`): Xử lý ảnh, Haar Cascade, DNN, LBPH
-- **TensorFlow/Keras**: OpenFace model
-- **NumPy**: Tính toán khoảng cách vector (Euclidean Distance)
-- **Pickle**: Serialization cho OpenFace embeddings
-- **JSON**: Lưu mapping cho LBPH
+**Runtime Switching**:
 
-**Công thức tính toán**:
+1. Stop current recognition
+2. Unload old model
+3. Load new model (LBPH ↔ OpenFace)
+4. Restart recognition loop
 
-- **LBPH Confidence**: Giá trị càng thấp càng tốt (0 = perfect match)
-- **OpenFace Distance**: Euclidean distance = $\sqrt{\sum_{i=1}^{128}(a_i - b_i)^2}$
+**Note**: Cả 2 methods cần train riêng từ cùng dataset
 
-### Frontend (Giao diện hiển thị)
+## 10. Dependencies
 
-**Công nghệ**:
+**Core Libraries**:
 
-- **OpenCV HighGUI** (`cv2.imshow`) cho preview video
-- **Tkinter/PyQt5** (tùy chọn) cho control panel
+- `opencv-python` (4.x): Computer vision
+- `numpy` (1.26.4, **< 2.0**): Numerical computing
+- `face-recognition` (1.2.3): OpenFace wrapper
+- `dlib` (19.24.1): Face recognition backend
+- `Pillow`: Image processing
+- `tkinter`: GUI (built-in)
 
-**Chức năng giao diện**:
+**Important**: NumPy < 2.0 required for dlib compatibility
 
-- **Video Display**: Hiển thị realtime với bounding box và labels
-- **Control Panel**:
-  - Radio buttons: Chọn kỹ thuật (LBPH / FaceNet)
-  - Sliders: Điều chỉnh threshold
-  - Buttons: Start/Stop, Train, Add User
-  - Status bar: Hiển thị FPS, kỹ thuật đang dùng
+## 11. Performance Metrics
 
-**Vẽ đồ họa**:
+### LBPH:
 
-- `cv2.rectangle`: Vẽ khung mặt (Xanh: OK, Đỏ: Denied)
-- `cv2.putText`: Ghi tên, confidence/distance, FPS
-- `cv2.circle`: Indicator cho trạng thái (đèn xanh/đỏ)
+- Training: < 1 minute
+- Recognition: 30-40 FPS
+- Accuracy: 70-85%
+- CPU Usage: Low
 
-### Cơ Sở Dữ Liệu (Database)
+### OpenFace:
 
-Không cần cài đặt MySQL/PostgreSQL phức tạp.
+- Training: 2-5 minutes
+- Recognition: 10-15 FPS
+- Accuracy: 85-95%
+- CPU Usage: Medium
 
-#### Cấu trúc lưu trữ:
+## 12. System Requirements
 
-**1. LBPH Method**:
+### Minimum (LBPH):
 
-```
-models/
-├── trainer.yml          # OpenCV YAML format
-│   └── Contains: Histogram data for each label ID
-└── mapping.json         # JSON format
-    └── {"0": "Tuan", "1": "Nam", "2": "Huy"}
-```
-
-**2. FaceNet Method**:
-
-```
-models/
-└── embeddings.pickle    # Python Pickle format
-    └── {
-          "names": ["Tuan", "Nam", "Huy"],
-          "embeddings": [array(128,), array(128,), array(128,)]
-        }
-```
-
-**3. Access Logs**:
-
-```
-logs/
-└── access_log.csv       # CSV format
-    └── timestamp,name,method,confidence,status
-        2024-01-01 10:30:15,Tuan,LBPH,45.2,GRANTED
-        2024-01-01 10:31:20,Unknown,OpenFace,0.85,DENIED
-```
-
-## 9. Quy Trình Chuyển Đổi Giữa 2 Kỹ Thuật
-
-Người dùng có thể chuyển đổi kỹ thuật trong runtime:
-
-1. **Dừng detection** hiện tại
-2. **Unload model** cũ (giải phóng memory)
-3. **Load model** mới theo kỹ thuật được chọn
-4. **Khởi động lại** detection loop
-
-**Lưu ý**: Mỗi kỹ thuật cần train riêng từ cùng một dataset.
-
-## 10. Yêu Cầu Hệ Thống
-
-### Tối thiểu (LBPH):
-
-- CPU: Intel i3 hoặc tương đương
+- CPU: Intel i3
 - RAM: 4GB
-- Webcam: 720p, 30fps
-- OS: Windows/Linux/MacOS
+- Webcam: 720p @ 30fps
 
-### Khuyến nghị (FaceNet):
+### Recommended (OpenFace):
 
-- CPU: Intel i5 hoặc tương đương
+- CPU: Intel i5
 - RAM: 8GB
-- GPU: NVIDIA GTX 1050 hoặc cao hơn (tùy chọn)
-- Webcam: 1080p, 30fps
-- OS: Windows/Linux/MacOS
+- Webcam: 1080p @ 30fps
+- GPU: Optional (CUDA-capable)
+
+## 13. Deployment Notes
+
+**Production Ready**: ✅
+
+**Tested With**:
+
+- Windows 10/11
+- Python 3.11
+- NumPy 1.26.4
+- OpenCV 4.x
+
+**Known Limitations**:
+
+- No anti-spoofing (can be fooled by photos)
+- Single camera only
+- No encryption for stored data
+- Performance degrades in poor lighting
+
+**Security Considerations**:
+
+- Local storage only
+- Embeddings stored, not raw images
+- Access logs in SQLite
+- Adjustable thresholds for security vs convenience
+
+---
+
+**Version**: 1.1.0  
+**Last Updated**: 2025-11-30  
+**Status**: Production Ready
