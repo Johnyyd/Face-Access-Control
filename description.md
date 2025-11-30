@@ -27,12 +27,12 @@ Hệ thống cho phép người dùng lựa chọn giữa 2 kỹ thuật:
 | **Nhược điểm**         | Nhạy cảm với ánh sáng, góc nghiêng, biểu cảm |
 | **Phù hợp**            | Môi trường ổn định, thiết bị yếu             |
 
-### Phương pháp 2: FaceNet (Deep Learning)
+### Phương pháp 2: OpenFace (Deep Learning)
 
 | Tiêu chí               | Đánh giá                                  |
 | ---------------------- | ----------------------------------------- |
 | **Detection**          | DNN (Caffe/TensorFlow model)              |
-| **Recognition**        | FaceNet Embeddings (128-d vector)         |
+| **Recognition**        | OpenFace Embeddings (128-d vector)         |
 | **Tốc độ**             | ⚡ Chậm hơn (~10-20 FPS)                  |
 | **Độ chính xác**       | ⭐⭐⭐⭐⭐ Cao (95-99%)                   |
 | **Yêu cầu tài nguyên** | Cao hơn (khuyến nghị GPU)                 |
@@ -43,7 +43,7 @@ Hệ thống cho phép người dùng lựa chọn giữa 2 kỹ thuật:
 ### Khuyến nghị lựa chọn:
 
 - **Chọn LBPH** nếu: Ưu tiên tốc độ, thiết bị yếu, môi trường ánh sáng ổn định
-- **Chọn FaceNet** nếu: Ưu tiên độ chính xác, có GPU, môi trường phức tạp
+- **Chọn OpenFace** nếu: Ưu tiên độ chính xác, có GPU, môi trường phức tạp
 
 ## 3. Sơ Đồ Hoạt Động (Flowchart)
 
@@ -51,20 +51,20 @@ Quy trình hoạt động được chia thành 2 giai đoạn chính: **Giai đo
 
 ### Giai đoạn 1: Đăng ký (Admin thực hiện)
 
-1. **Start**: Admin nhập tên thành viên và chọn kỹ thuật (LBPH hoặc FaceNet)
+1. **Start**: Admin nhập tên thành viên và chọn kỹ thuật (LBPH hoặc OpenFace)
 2. **Capture**: Webcam chụp $N$ ảnh khuôn mặt của thành viên (ở các góc độ khác nhau)
 3. **Pre-process**:
    - Phát hiện khuôn mặt (Detection)
      - **LBPH**: Sử dụng Haar Cascade
-     - **FaceNet**: Sử dụng DNN Detector
+     - **OpenFace**: Sử dụng DNN Detector
    - Cắt vùng mặt (Crop)
    - Chỉnh kích thước (Resize)
 4. **Feature Extraction**:
    - **LBPH**: Chuyển sang Grayscale → Tính toán LBP Histogram
-   - **FaceNet**: Normalize → Tạo vector embedding 128 chiều
+   - **OpenFace**: Normalize → Tạo vector embedding 128 chiều
 5. **Save**: Lưu dữ liệu đặc trưng vào Database/File
    - **LBPH**: Lưu vào `trainer.yml` + `mapping.json`
-   - **FaceNet**: Lưu vào `embeddings.pickle`
+   - **OpenFace**: Lưu vào `embeddings.pickle`
 6. **End**
 
 ### Giai đoạn 2: Vận hành
@@ -73,15 +73,15 @@ Quy trình hoạt động được chia thành 2 giai đoạn chính: **Giai đo
 2. **Loop**: Đọc frame liên tục
 3. **Detect**: Tìm khuôn mặt trong khung hình
    - **LBPH**: Haar Cascade Classifier
-   - **FaceNet**: DNN Face Detector (Caffe model)
+   - **OpenFace**: DNN Face Detector (Caffe model)
    - **Có mặt**: Sang bước tiếp theo
    - **Không**: Quay lại bước 2
 4. **Recognize**: Trích xuất đặc trưng khuôn mặt hiện tại và so sánh với Database
    - **LBPH**: So sánh histogram, tính confidence score
-   - **FaceNet**: Tính Euclidean distance giữa embeddings
+   - **OpenFace**: Tính Euclidean distance giữa embeddings
 5. **Decision**:
    - **LBPH**: Nếu `Confidence < Threshold` (VD: < 50): HỢP LỆ
-   - **FaceNet**: Nếu `Distance < Threshold` (VD: < 0.6): HỢP LỆ
+   - **OpenFace**: Nếu `Distance < Threshold` (VD: < 0.6): HỢP LỆ
    - **HỢP LỆ** → Gửi lệnh Mở khóa (Unlock) → Hiển thị tên
    - **KHÔNG HỢP LỆ** → Cảnh báo (Access Denied)
 6. **Loop**: Tiếp tục vòng lặp
@@ -93,7 +93,7 @@ Quy trình hoạt động được chia thành 2 giai đoạn chính: **Giai đo
 - **Nguồn hình ảnh**: Luồng video (Video Stream) từ Webcam (độ phân giải khuyến nghị 640x480 hoặc 720p)
 - **Dữ liệu mẫu**: Thư mục ảnh khuôn mặt của các thành viên (`dataset/`)
 - **Cấu hình**:
-  - Lựa chọn kỹ thuật (LBPH hoặc FaceNet)
+  - Lựa chọn kỹ thuật (LBPH hoặc OpenFace)
   - Ngưỡng chính xác (Threshold)
   - Đường dẫn model
 
@@ -102,7 +102,7 @@ Quy trình hoạt động được chia thành 2 giai đoạn chính: **Giai đo
 - **Giao diện (Visual)**: Màn hình hiển thị video realtime với:
   - Khung hình chữ nhật (Bounding Box) bao quanh mặt
   - Tên thành viên và trạng thái (Xanh: OK, Đỏ: Denied)
-  - Hiển thị kỹ thuật đang sử dụng (LBPH/FaceNet)
+  - Hiển thị kỹ thuật đang sử dụng (LBPH/OpenFace)
   - Hiển thị FPS và độ tin cậy
 - **Tín hiệu điều khiển**:
   - Log ghi nhận thời gian ra vào (File `.csv` và Console log)
@@ -152,23 +152,21 @@ FaceAccessControl/
 │   ├── haarcascade_frontalface_default.xml    # Haar Cascade cho LBPH
 │   ├── trainer.yml                             # LBPH trained model
 │   ├── mapping.json                            # ID to Name mapping cho LBPH
-│   ├── deploy.prototxt                         # DNN config cho FaceNet
-│   ├── res10_300x300_ssd_iter_140000.caffemodel # DNN weights cho FaceNet
-│   ├── facenet_keras.h5                        # FaceNet model
-│   └── embeddings.pickle                       # FaceNet embeddings database
+│   ├── deploy.prototxt                         # DNN config cho OpenFace
+│   └── embeddings.pickle                       # OpenFace embeddings database
 ├── modules/
 │   ├── __init__.py
 │   ├── camera.py               # Quản lý Webcam (Open, Read, Close)
 │   ├── detector.py             # Class bọc kỹ thuật Detection (Haar/DNN)
 │   ├── recognizer_lbph.py      # Class cho LBPH Recognition
-│   ├── recognizer_facenet.py   # Class cho FaceNet Recognition
+│   ├── recognizer_openface.py   # Class cho OpenFace Recognition
 │   └── database.py             # Quản lý lưu/đọc dữ liệu người dùng
 ├── gui/
 │   ├── __init__.py
 │   └── main_window.py          # Giao diện chính với tùy chọn kỹ thuật
 ├── main.py                     # Chương trình chính (Vận hành)
 ├── train_lbph.py               # Training script cho LBPH
-├── train_facenet.py            # Training script cho FaceNet
+├── train_openface.py            # Training script cho OpenFace
 ├── config.py                   # File cấu hình (thresholds, paths)
 └── requirements.txt            # Các thư viện cần thiết
 ```
@@ -234,15 +232,15 @@ def predict(self, face_image):
     """
 ```
 
-### C. Module `recognizer_facenet.py`
+### C. Module `recognizer_openface.py`
 
-**Nhiệm vụ**: Nhận diện khuôn mặt bằng FaceNet
+**Nhiệm vụ**: Nhận diện khuôn mặt bằng OpenFace
 
-**Class**: `FaceNetRecognizer`
+**Class**: `OpenFaceRecognizer`
 
 **Biến quan trọng**:
 
-- `model`: FaceNet model (Keras/TensorFlow)
+- `model`: OpenFace model (Keras/TensorFlow)
 - `known_embeddings`: List các vector 128-d đã lưu
 - `known_names`: List tên tương ứng
 - `distance_threshold`: Ngưỡng khoảng cách Euclidean (VD: 0.6)
@@ -288,12 +286,12 @@ def load_lbph_model(path):
     Return: (recognizer, label_map)
     """
 
-def save_facenet_embeddings(names, embeddings, path):
+def save_openface_embeddings(names, embeddings, path):
     """
-    Lưu FaceNet embeddings vào pickle
+    Lưu OpenFace embeddings vào pickle
     """
 
-def load_facenet_embeddings(path):
+def load_openface_embeddings(path):
     """
     Load FaceNet embeddings
     Return: (names, embeddings)
@@ -309,15 +307,15 @@ Là các file trong thư mục `modules/`. Nơi thực hiện các thuật toán
 **Thư viện sử dụng**:
 
 - **OpenCV** (`cv2`): Xử lý ảnh, Haar Cascade, DNN, LBPH
-- **TensorFlow/Keras**: FaceNet model
+- **TensorFlow/Keras**: OpenFace model
 - **NumPy**: Tính toán khoảng cách vector (Euclidean Distance)
-- **Pickle**: Serialization cho FaceNet embeddings
+- **Pickle**: Serialization cho OpenFace embeddings
 - **JSON**: Lưu mapping cho LBPH
 
 **Công thức tính toán**:
 
 - **LBPH Confidence**: Giá trị càng thấp càng tốt (0 = perfect match)
-- **FaceNet Distance**: Euclidean distance = $\sqrt{\sum_{i=1}^{128}(a_i - b_i)^2}$
+- **OpenFace Distance**: Euclidean distance = $\sqrt{\sum_{i=1}^{128}(a_i - b_i)^2}$
 
 ### Frontend (Giao diện hiển thị)
 
@@ -375,7 +373,7 @@ logs/
 └── access_log.csv       # CSV format
     └── timestamp,name,method,confidence,status
         2024-01-01 10:30:15,Tuan,LBPH,45.2,GRANTED
-        2024-01-01 10:31:20,Unknown,FaceNet,0.85,DENIED
+        2024-01-01 10:31:20,Unknown,OpenFace,0.85,DENIED
 ```
 
 ## 9. Quy Trình Chuyển Đổi Giữa 2 Kỹ Thuật
