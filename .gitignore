@@ -52,8 +52,7 @@ models/*.pickle
 # Dataset (personal data)
 dataset/*
 !dataset/.gitkeep
-!dataset/User_A/.gitkeep
-!dataset/User_B/.gitkeep
+!dataset/minhtri/.gitkeep
 
 # Logs
 logs/*.csv
