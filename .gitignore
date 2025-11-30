@@ -43,7 +43,6 @@ env/
 models/*.xml
 models/*.prototxt
 models/*.caffemodel
-models/*.h5
 models/*.yml
 models/*.pickle
 

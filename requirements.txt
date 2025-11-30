@@ -1,69 +1,28 @@
-# Face Access Control - Python Dependencies
+# Face Access Control System - Dependencies
+# Python 3.11+
 
-# ==================== CORE DEPENDENCIES ====================
-
-# OpenCV - Computer Vision library
+# Core Computer Vision
 opencv-python>=4.8.0
+numpy<2.0  # CRITICAL: Must be < 2.0 for dlib compatibility
 
-# OpenCV Contrib - Bổ sung cho LBPH Face Recognizer
-opencv-contrib-python>=4.8.0
+# Face Recognition (OpenFace)
+face-recognition>=1.2.3
+dlib>=19.24.1
 
-# NumPy - Numerical computing
-numpy>=1.24.0
-
-# gdown - Download files from Google Drive
-gdown>=5.2.0
-
-# ==================== DEEP LEARNING DEPENDENCIES ====================
-
-# face_recognition - OpenFace wrapper (dlib-based)
-# Easier to install and more stable than FaceNet
-face-recognition>=1.3.0
-
-# dlib - Required by face_recognition (will be installed automatically)
-# Note: On Windows, may need Visual C++ build tools
-
-# ==================== IMAGE PROCESSING ====================
-
-# Pillow - Image processing library
+# Image Processing
 Pillow>=10.0.0
 
-# ==================== SCIENTIFIC COMPUTING ====================
+# GUI (built-in with Python)
+# tkinter - No installation needed
 
-# SciPy - Scientific computing (cho distance calculations)
-scipy>=1.11.0
+# Data Handling
+scipy>=1.11.0  # Required by face_recognition
 
-# ==================== GUI DEPENDENCIES ====================
+# Optional: Performance
+# cmake>=3.25.0  # Only needed if building dlib from source
+# wheel>=0.40.0  # For pre-built packages
 
-# PyQt5 - GUI framework (alternative: tkinter is built-in)
-# Uncomment nếu muốn dùng PyQt5 thay vì Tkinter
-# PyQt5>=5.15.0
-
-# ==================== UTILITIES ====================
-
-# tqdm - Progress bars cho training
-tqdm>=4.66.0
-
-# ==================== OPTIONAL DEPENDENCIES ====================
-
-# matplotlib - Visualization (optional, for debugging)
-# matplotlib>=3.7.0
-
-# scikit-learn - Machine learning utilities (optional)
-# scikit-learn>=1.3.0
-
-# ==================== NOTES ====================
-
-# Để cài đặt tất cả dependencies:
-# pip install -r requirements.txt
-
-# Nếu gặp lỗi với TensorFlow trên Windows:
-# pip install tensorflow-cpu>=2.13.0
-
-# Nếu có GPU NVIDIA và muốn tăng tốc FaceNet:
-# pip install tensorflow-gpu>=2.13.0
-# (Yêu cầu CUDA và cuDNN được cài đặt)
-
-# Kiểm tra phiên bản Python:
-# Python >= 3.8 được khuyến nghị
-# Python >= 3.10 cho hiệu suất tốt nhất
+# Development Tools (optional)
+# pytest>=7.4.0
+# black>=23.0.0
+# flake8>=6.0.0
