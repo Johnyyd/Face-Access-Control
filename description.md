@@ -85,7 +85,7 @@ Hệ thống hoạt động theo cơ chế **One-to-Many Matching (1:N)**. Camer
   - Tên user + confidence/distance
   - FPS counter
   - Method indicator (LBPH/OpenFace)
-- **Logs**: SQLite database (`logs/access.db`)
+- **Logs**: CSV (`logs/access_log.csv`)
 
 ## 5. Luồng Dữ Liệu
 

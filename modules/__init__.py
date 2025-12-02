@@ -5,16 +5,20 @@ Export các class chính để dễ dàng import
 
 from .camera import CameraManager
 from .detector import FaceDetector
-from .database import Database
 from .recognizer_lbph import LBPHRecognizer
 from .recognizer_openface import OpenFaceRecognizer
+from .recognizer_sface import SFaceRecognizer
+from .detector_yunet import YuNetDetector
+from .database import Database
 
 __all__ = [
     'CameraManager',
     'FaceDetector',
-    'Database',
     'LBPHRecognizer',
-    'OpenFaceRecognizer'
+    'OpenFaceRecognizer',
+    'SFaceRecognizer',
+    'YuNetDetector',
+    'Database'
 ]
 
 __version__ = '1.0.0'

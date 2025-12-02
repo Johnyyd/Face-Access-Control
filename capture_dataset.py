@@ -20,9 +20,13 @@ def capture_images(name: str, num_images: int = 20, auto_detect: bool = True):
         num_images: Số lượng ảnh cần chụp
         auto_detect: Tự động detect face và chỉ lưu khi có face
     """
-    # Tạo thư mục user
-    user_dir = os.path.join(config.DATASET_DIR, name)
-    os.makedirs(user_dir, exist_ok=True)
+    # Tạo thư mục user, nếu thư mục đã tồn tại thì bỏ qua, chụp thêm ảnh vào thư mục đó
+    # Nếu thư mục không tồn tại thì tạo thư mục mới
+    if os.path.exists(os.path.join(config.DATASET_DIR, name)):
+        user_dir = os.path.join(config.DATASET_DIR, name)
+    else:
+        user_dir = os.path.join(config.DATASET_DIR, name)
+        os.makedirs(user_dir, exist_ok=True)
     
     print("=" * 60)
     print(f"CAPTURING DATASET FOR: {name}")
@@ -93,6 +97,8 @@ def capture_images(name: str, num_images: int = 20, auto_detect: bool = True):
             # SPACE để chụp
             if key == ord(' '):
                 if can_capture:
+                    if os.path.exists(os.path.join(user_dir, f"{count+1:03d}.jpg")):
+                        count += 1
                     filename = os.path.join(user_dir, f"{count+1:03d}.jpg")
                     cv2.imwrite(filename, frame)
                     print(f"✓ Saved: {filename}")

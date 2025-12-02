@@ -65,6 +65,22 @@ def main():
         'required': False
     })
     
+    # 4. YuNet (Face Detection - Recommended)
+    models.append({
+        'name': 'YuNet Face Detector',
+        'url': 'https://github.com/opencv/opencv_zoo/raw/main/models/face_detection_yunet/face_detection_yunet_2023mar.onnx',
+        'output': 'models/face_detection_yunet_2023mar.onnx',
+        'required': False
+    })
+    
+    # 5. SFace (Face Recognition - Recommended)
+    models.append({
+        'name': 'SFace Face Recognizer',
+        'url': 'https://github.com/opencv/opencv_zoo/raw/main/models/face_recognition_sface/face_recognition_sface_2021dec.onnx',
+        'output': 'models/face_recognition_sface_2021dec.onnx',
+        'required': False
+    })
+    
     print("\nModels to download:")
     for i, model in enumerate(models, 1):
         status = "REQUIRED" if model['required'] else "OPTIONAL"
@@ -72,7 +88,6 @@ def main():
         print(f"{i}. {model['name']} ({status}) - {exists}")
     
     print("\n" + "=" * 60)
-    print("NOTE: FaceNet model (~90MB) must be downloaded manually")
     print("See MODELS_DOWNLOAD.md for instructions")
     print("=" * 60)
     
@@ -121,7 +136,8 @@ def main():
         'Haar Cascade': 'models/haarcascade_frontalface_default.xml',
         'DNN Prototxt': 'models/deploy.prototxt',
         'DNN Caffemodel': 'models/res10_300x300_ssd_iter_140000.caffemodel',
-        'FaceNet': 'models/facenet_keras.h5'
+        'YuNet Detector': 'models/face_detection_yunet_2023mar.onnx',
+        'SFace Recognizer': 'models/face_recognition_sface_2021dec.onnx'
     }
     
     for name, path in all_models.items():
@@ -141,7 +157,10 @@ def main():
         print("3. Run: python train_lbph.py or python train_facenet.py")
     else:
         print("\n✓ All models ready!")
-        print("Next: python train_lbph.py or python train_facenet.py")
+        print("Next steps:")
+        print("  - Train LBPH: python train_lbph.py")
+        print("  - Train OpenFace: python train_openface.py")
+        print("  - Train SFace: python train_sface.py")
     
     print("=" * 60)
 
