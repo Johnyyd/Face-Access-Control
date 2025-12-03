@@ -269,9 +269,10 @@ class MainWindow:
         # Initialize SFace nếu có
         if SFACE_RECOGNITION_AVAILABLE:
             self.recognizer_sface = SFaceRecognizer()
-            if self.database.model_exists("sface"):
-                if self.recognizer_sface.load_model():
-                    self._update_status("SFace model loaded", "green")
+            # SFace uses facenet embeddings storage
+            if self.database.model_exists("facenet"):
+                if self.recognizer_sface.load_embeddings():
+                    self._update_status("SFace embeddings loaded", "green")
 
     def _start_recognition(self):
         """Bắt đầu recognition"""
@@ -300,10 +301,10 @@ class MainWindow:
             if not SFACE_RECOGNITION_AVAILABLE:
                 messagebox.showerror("Error", "sface library not available!")
                 return
-            if not self.recognizer_sface.is_model_trained():
+            if not self.recognizer_sface.is_embeddings_loaded():
                 messagebox.showerror(
                     "Error",
-                    "SFace model not trained!\nPlease run train_sface.py first.",
+                    "SFace embeddings not trained!\nPlease run train_sface.py first.",
                 )
                 return
 
