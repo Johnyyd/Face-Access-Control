@@ -82,6 +82,10 @@ class MainWindow:
         # Control panel
         self._create_control_panel(main_frame)
 
+
+        # View user panel
+        self._view_assess_user_(main_frame)
+
         # Status panel
         self._create_status_panel(main_frame)
 
@@ -104,6 +108,18 @@ class MainWindow:
 
         # Placeholder image
         self._show_placeholder()
+
+    def _create_new_user_(self):
+        """Tạo người dùng mới"""
+        pass
+    
+    def _delete_user_(self):
+        """Xóa người dùng"""
+        pass
+    
+    def _update_user_(self):
+        """Cập nhật người dùng"""
+        pass
 
     def _create_control_panel(self, parent):
         """Tạo control panel"""
@@ -215,11 +231,32 @@ class MainWindow:
 
         ttk.Separator(control_frame, orient="horizontal").pack(fill="x", pady=10)
 
+        # below control panel
+        user_frame = ttk.LabelFrame(control_frame, text="User", padding="10")
+        user_frame.pack(fill="x", pady=5)
+        """Tạo người dùng mới"""
+        self.new_user_frame = ttk.Button(user_frame, text="New User", padding="10", command=self._create_new_user_)
+        self.new_user_frame.grid(row=0, column=0, padx=5, pady=5, sticky=(tk.W, tk.E, tk.N, tk.S))
+        
+        """Xóa người dùng"""
+        self.delete_user_frame = ttk.Button(user_frame, text="Delete User", padding="10", command=self._delete_user_)
+        self.delete_user_frame.grid(row=0, column=1, padx=5, pady=5, sticky=(tk.W, tk.E, tk.N, tk.S))
+
+        """Cập nhật người dùng"""
+        self.update_user_frame = ttk.Button(user_frame, text="Update User", padding="10", command=self._update_user_)
+        self.update_user_frame.grid(row=0, column=2, padx=5, pady=5, sticky=(tk.W, tk.E, tk.N, tk.S))
+
         # View logs button
-        logs_button = ttk.Button(
-            control_frame, text="View Access Logs", command=self._view_logs
+        self.logs_button = ttk.Button(control_frame, text="View Access Logs", command=self._view_logs)
+        self.logs_button.pack(fill="x", pady=5)
+
+    # left window    
+    def _view_assess_user_(self, parent):
+        """Hiển thị thông tin người dùng"""
+        user_frame = ttk.LabelFrame(parent, text="User", padding="10")
+        user_frame.grid(
+            row=0, column=2, padx=5, pady=5, sticky=(tk.W, tk.E, tk.N, tk.S)
         )
-        logs_button.pack(fill="x", pady=5)
 
     def _create_status_panel(self, parent):
         """Tạo status panel"""
