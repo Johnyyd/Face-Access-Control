@@ -7,7 +7,7 @@ Usage:
 """
 
 import tkinter as tk
-from gui.main_window import MainWindow
+from gui.main_window_tkinter import MainWindow
 import config
 import sys
 import os
@@ -163,4 +163,4 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()

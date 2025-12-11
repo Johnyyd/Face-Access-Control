@@ -67,6 +67,16 @@ class MainWindow:
 
 
     def _create_gui(self):
+        # Main window
         gr.Blocks(
-
+            # 
+            gr.Row(
+                [
+                    gr.Column(
+                        [
+                            
+                        ]
+                    )
+                ]
+            )
         )

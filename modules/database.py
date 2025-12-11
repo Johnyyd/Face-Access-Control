@@ -451,8 +451,6 @@ class Database:
             return os.path.exists(
                 config.OPENFACE_EMBEDDINGS_PATH
             )  # SFace uses same format
-        elif method == "facenet":
-            return os.path.exists(config.FACENET_EMBEDDINGS_PATH)
 
         return False
 
