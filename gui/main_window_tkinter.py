@@ -108,6 +108,7 @@ class MainWindow:
         # Placeholder image
         self._show_placeholder()
 
+    # Middle Window
     def _create_new_user_(self):
         """Tạo người dùng mới"""
         pass
