@@ -22,12 +22,7 @@ def main():
         print(f"\n✗ ERROR: Dataset directory not found: {config.DATASET_DIR}")
         print("\nPlease create dataset directory and add user images:")
         print(f"  {config.DATASET_DIR}/")
-        print(f"    ├── User1/")
-        print(f"    │   ├── 001.jpg")
-        print(f"    │   ├── 002.jpg")
-        print(f"    │   └── ...")
-        print(f"    ├── User2/")
-        print(f"    │   └── ...")
+
         return False
     
     # Kiểm tra có user directories không

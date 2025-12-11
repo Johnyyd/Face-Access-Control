@@ -51,8 +51,8 @@ DNN_INPUT_SIZE = (300, 300)  # Kích thước input cho DNN
 # ==================== CẤU HÌNH LBPH RECOGNITION ====================
 
 # LBPH Model paths
-LBPH_MODEL_PATH = os.path.join(MODELS_DIR, "trainer.yml")
-LBPH_MAPPING_PATH = os.path.join(MODELS_DIR, "mapping.json")
+LBPH_MODEL_PATH = os.path.join(MODELS_DIR, "lbph/trainer.yml")
+LBPH_MAPPING_PATH = os.path.join(MODELS_DIR, "lbph/mapping.json")
 
 # LBPH Parameters
 LBPH_RADIUS = 1  # Radius cho LBP
@@ -212,6 +212,7 @@ def validate_config():
     if not (0 < SFACE_DISTANCE_THRESHOLD < 2):
         errors.append("SFACE_DISTANCE_THRESHOLD should be between 0 and 2")
 
+    
     if errors:
         print("Configuration errors:")
         for error in errors:
@@ -233,9 +234,9 @@ if __name__ == "__main__":
     print("=" * 50)
     print(f"Default Detection Method: {DEFAULT_DETECTION_METHOD}")
     print(f"Default Recognition Method: {DEFAULT_RECOGNITION_METHOD}")
-    print(f"LBPH Threshold: {LBPH_CONFIDENCE_THRESHOLD}")
-    print(f"OpenFace Threshold: {OPENFACE_DISTANCE_THRESHOLD}")
-    print(f"SFace Threshold: {SFACE_DISTANCE_THRESHOLD}")
+    # print(f"LBPH Threshold: {LBPH_CONFIDENCE_THRESHOLD}")
+    # print(f"OpenFace Threshold: {OPENFACE_DISTANCE_THRESHOLD}")
+    # print(f"SFace Threshold: {SFACE_DISTANCE_THRESHOLD}")
     print("=" * 50)
 
     # Tạo thư mục
@@ -243,6 +244,6 @@ if __name__ == "__main__":
 
     # Validate config
     if validate_config():
-        print("✓ Configuration is valid")
+        print("Configuration is valid")
     else:
-        print("✗ Configuration has errors")
+        print("Configuration has errors")
