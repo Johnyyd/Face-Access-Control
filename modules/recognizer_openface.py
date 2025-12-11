@@ -155,7 +155,7 @@ class OpenFaceRecognizer:
             self.known_encodings = encodings
             self.is_trained = True
 
-            # Lưu vào database (sử dụng format tương tự OpenFace)
+            # Lưu vào database (sử dụng format tương tự SFace)
             if self.database.save_openface_embeddings(names, encodings):
                 print(
                     "[OpenFaceRecognizer] [OK] Training completed and encodings saved"
