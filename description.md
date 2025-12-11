@@ -167,7 +167,7 @@ Face-Access-Control/
 
 **Key Variables**:
 
-- `model`: `face_recognition.FaceNet()`
+- `model`: `face_recognition.OpenFace()`
 - `known_encodings`: List of 128-d vectors
 - `known_names`: Corresponding names
 - `distance_threshold`: Default 0.6

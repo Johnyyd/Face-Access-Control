@@ -195,8 +195,8 @@ class SFaceRecognizer:
             self.known_embeddings = embeddings
             self.is_trained = True
 
-            # Save to database (reuse facenet storage)
-            if self.database.save_facenet_embeddings(names, embeddings):
+            # Save to database (reuse openface storage)
+            if self.database.save_openface_embeddings(names, embeddings):
                 print("[SFaceRecognizer] [OK] Training completed and embeddings saved")
                 return True
             else:
@@ -217,7 +217,7 @@ class SFaceRecognizer:
             bool: True if loaded successfully
         """
         try:
-            names, embeddings = self.database.load_facenet_embeddings()
+            names, embeddings = self.database.load_openface_embeddings()
 
             if names is None or embeddings is None:
                 print("[SFaceRecognizer] ERROR: Failed to load embeddings")
@@ -323,7 +323,7 @@ if __name__ == "__main__":
 
     # Check for existing embeddings
     print("\nChecking for existing embeddings...")
-    if recognizer.database.model_exists("facenet"):
+    if recognizer.database.model_exists("sface"):
         print("[OK] Embeddings exist, loading...")
         if recognizer.load_embeddings():
             print(f"[OK] Loaded successfully")

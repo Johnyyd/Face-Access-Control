@@ -269,8 +269,8 @@ class MainWindow:
         # Initialize SFace nếu có
         if SFACE_RECOGNITION_AVAILABLE:
             self.recognizer_sface = SFaceRecognizer()
-            # SFace uses facenet embeddings storage
-            if self.database.model_exists("facenet"):
+            # SFace uses sface embeddings storage
+            if self.database.model_exists("sface"):
                 if self.recognizer_sface.load_embeddings():
                     self._update_status("SFace embeddings loaded", "green")
 

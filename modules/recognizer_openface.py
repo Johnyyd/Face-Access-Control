@@ -155,7 +155,7 @@ class OpenFaceRecognizer:
             self.known_encodings = encodings
             self.is_trained = True
 
-            # Lưu vào database (sử dụng format tương tự FaceNet)
+            # Lưu vào database (sử dụng format tương tự OpenFace)
             if self.database.save_openface_embeddings(names, encodings):
                 print(
                     "[OpenFaceRecognizer] [OK] Training completed and encodings saved"
@@ -289,7 +289,7 @@ if __name__ == "__main__":
 
     # Test: Check if encodings exist
     print("\nChecking for existing encodings...")
-    if recognizer.database.model_exists("facenet"):  # Reuse same storage
+    if recognizer.database.model_exists("openface"):  # Reuse same storage
         print("✓ Encodings exist, loading...")
         if recognizer.load_encodings():
             print(f"✓ Encodings loaded successfully")

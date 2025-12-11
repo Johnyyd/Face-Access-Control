@@ -85,7 +85,7 @@ def main():
         print("=" * 60)
         
         print("\nEmbeddings saved to:")
-        print(f"  - {config.MODELS_DIR}/embeddings.pickle")
+        print(f"  - {config.MODELS_DIR}/sface/face_recognition_sface_2021dec.onnx")
         
         print(f"\nTrained users: {recognizer.get_user_list()}")
         print(f"Total embeddings: {len(recognizer.known_embeddings)}")
