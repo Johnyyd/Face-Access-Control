@@ -69,14 +69,59 @@ class MainWindow:
     def _create_gui(self):
         # Main window
         gr.Blocks(
-            # 
+            # Row 1: Video Feed and Control Panel
             gr.Row(
                 [
+                    # Video Feed
                     gr.Column(
                         [
                             
+                        ]
+                    ),
+                    # Control Panel 
+                    gr.Column(
+                        [
+                            
+                        ]
+                    ),
+                    # Detected Information
+                    gr.Column(
+                        [
+                            # Image and Name
+                            gr.Column(
+                                [
+                                    # Image
+                                    gr.Row(
+                                        [
+
+                                        ]
+                                    ),
+                                    # Name
+                                    gr.Row(
+                                        [
+                                            
+                                        ]
+                                    ),
+                                    gr.Row(
+                                        [
+                                            
+                                        ]
+                                    ),
+                                ]
+                            )
                         ]
                     )
                 ]
             )
         )
+        # Status
+        gr.Blocks(
+            [
+                gr.Row(
+                    [
+                        
+                    ]
+                )
+            ]
+        )
+
