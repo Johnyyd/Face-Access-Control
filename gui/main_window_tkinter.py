@@ -125,7 +125,7 @@ class MainWindow:
         """Tạo control panel"""
         control_frame = ttk.LabelFrame(parent, text="Controls", padding="10")
         control_frame.grid(
-            row=0, column=1, padx=5, pady=5, sticky=(tk.W, tk.E, tk.N, tk.S)
+            row=0, column=2, padx=5, pady=5, sticky=(tk.W, tk.E, tk.N, tk.S)
         )
 
         # Recognition method selection
@@ -255,8 +255,21 @@ class MainWindow:
         """Hiển thị thông tin người dùng"""
         user_frame = ttk.LabelFrame(parent, text="User", padding="10")
         user_frame.grid(
-            row=0, column=2, padx=5, pady=5, sticky=(tk.W, tk.E, tk.N, tk.S)
+            row=0, column=1, padx=5, pady=5, sticky=(tk.W, tk.E, tk.N, tk.S)
         )
+        placeholder_user = Image.new("RGB", (640, 480), color=(50, 50, 50))
+        self.user_image_from_camera = ImageTk.PhotoImage(placeholder_user)
+
+        self.user_label = ttk.Label(user_frame, text="Name: ")
+        self.user_label.pack(side=tk.LEFT, padx=10)
+
+        self.last_access_time = ttk.Label(user_frame, text="Last Access Time: ")
+        self.last_access_time.pack(side=tk.LEFT, padx=10)
+
+        placeholder_user_database = Image.new("RGB", (640, 480), color=(50, 50, 50))
+        self.user_image_from_database = ImageTk.PhotoImage(placeholder_user_database)
+
+
 
     def _create_status_panel(self, parent):
         """Tạo status panel"""
