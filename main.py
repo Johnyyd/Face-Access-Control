@@ -7,7 +7,9 @@ Usage:
 """
 
 import tkinter as tk
-from gui.main_window_tkinter import MainWindow
+from gui.main_window_tkinter import TKinterMainWindow
+
+from gui.main_window_gradio import GradioMainWindow
 import config
 import sys
 import os
@@ -140,19 +142,22 @@ def main():
     print("\nLaunching GUI...")
 
     try:
-        root = tk.Tk()
-        app = MainWindow(root)
+        choice = int(input("Nhập lựa chọn: "))
+        if choice == 1:
+            app1 = GradioMainWindow()
+            app1.demo.launch(share=True)
+            print("[OK] GUI launched successfully")
+            print("\nApplication is running. Close the window to exit.")
+        if choice == 2:
+            root = tk.Tk()
+            app2 = TKinterMainWindow(root)
+            root.mainloop()
+            print("[OK] GUI launched successfully")
+            print("\nApplication is running. Close the window to exit.")
+            print("\n" + "=" * 60)
+            print("APPLICATION CLOSED")
+            print("=" * 60)
 
-        print("[OK] GUI launched successfully")
-        print("\nApplication is running. Close the window to exit.")
-
-        root.mainloop()
-
-        print("\n" + "=" * 60)
-        print("APPLICATION CLOSED")
-        print("=" * 60)
-
-        return 0
 
     except Exception as e:
         print(f"\n[X] ERROR: Failed to start application: {e}")

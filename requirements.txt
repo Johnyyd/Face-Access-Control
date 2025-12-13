@@ -13,13 +13,13 @@ dlib>=19.24.1
 Pillow>=10.0.0
 
 # GUI (built-in with Python)
-# tkinter - No installation needed
+gradio>=4.22.0
 
 # Data Handling
 scipy>=1.11.0  # Required by face_recognition
 
 # Optional: Performance
-# cmake>=3.25.0  # Only needed if building dlib from source
+cmake>=3.25.0  # Only needed if building dlib from source
 # wheel>=0.40.0  # For pre-built packages
 
 # Development Tools (optional)

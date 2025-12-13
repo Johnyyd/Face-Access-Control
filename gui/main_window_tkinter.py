@@ -30,7 +30,7 @@ except ImportError:
 SFACE_RECOGNITION_AVAILABLE = True  # Assume available since we have the module
 
 
-class MainWindow:
+class TKinterMainWindow:
     """Main GUI window for Face Access Control"""
 
     def __init__(self, root):
@@ -602,7 +602,7 @@ class MainWindow:
 def main():
     """Main function"""
     root = tk.Tk()
-    app = MainWindow(root)
+    app = TKinterMainWindow(root)
     root.mainloop()
 
 
