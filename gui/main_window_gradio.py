@@ -244,7 +244,7 @@ class GradioMainWindow:
         self._on_threshold_change(threshold, method_name)
 
         # Loop
-        return self._recognition_loop()
+        yield from self._recognition_loop()
 
     def _stop_recognition(self):
         """Stop the loop"""
@@ -369,7 +369,6 @@ class GradioMainWindow:
 
             # Small sleep to prevent tight loop if needed, but grab() usually blocks enough
             time.sleep(0.01)
-
 
             # outputs=[
             #         self.video_feed,

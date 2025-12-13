@@ -142,21 +142,22 @@ def main():
     print("\nLaunching GUI...")
 
     try:
-        choice = int(input("Nhập lựa chọn: "))
-        if choice == 1:
-            app1 = GradioMainWindow()
-            app1.demo.launch(share=True)
-            print("[OK] GUI launched successfully")
-            print("\nApplication is running. Close the window to exit.")
-        if choice == 2:
-            root = tk.Tk()
-            app2 = TKinterMainWindow(root)
-            root.mainloop()
-            print("[OK] GUI launched successfully")
-            print("\nApplication is running. Close the window to exit.")
-            print("\n" + "=" * 60)
-            print("APPLICATION CLOSED")
-            print("=" * 60)
+        while True:
+            choice = int(input("Nhập lựa chọn: "))
+            if choice == 1:
+                app1 = GradioMainWindow()
+                app1.demo.launch(share=True)
+                print("[OK] GUI launched successfully")
+                print("\nApplication is running. Close the window to exit.")
+            if choice == 2:
+                root = tk.Tk()
+                app2 = TKinterMainWindow(root)
+                root.mainloop()
+                print("[OK] GUI launched successfully")
+                print("\nApplication is running. Close the window to exit.")
+                print("\n" + "=" * 60)
+                print("APPLICATION CLOSED")
+                print("=" * 60)
 
 
     except Exception as e:
