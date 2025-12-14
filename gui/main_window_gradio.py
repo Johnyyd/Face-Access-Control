@@ -161,7 +161,10 @@ class GradioMainWindow:
                     with gr.Row():
                         self.new_user_btn = gr.Button("New User")
                         self.delete_user_btn = gr.Button("Delete User")
-                    self.update_user_btn = gr.Button("Update User")
+
+                    with gr.Row():
+                        self.update_user_btn = gr.Button("Update User")
+                        self.train_btn = gr.Button("Train Models", variant="secondary")
 
                     self.logs_btn = gr.Button("View Access Logs")
 
@@ -236,6 +239,9 @@ class GradioMainWindow:
                 outputs=[self.status_text],
             )
 
+            # Train Models
+            self.train_btn.click(fn=self._train_models, outputs=[self.status_text])
+
             # View Logs
             self.logs_btn.click(fn=self._view_logs, outputs=[self.logs_output])
 
@@ -284,6 +290,56 @@ class GradioMainWindow:
         self.is_running = False
         self.camera.release()
         return "Stopped"
+
+    def _train_models(self):
+        """Train all 3 models"""
+        if self.is_running:
+            self._stop_recognition()
+            time.sleep(1.0)
+
+        status_msg = "Training Results:\n"
+
+        # 1. LBPH
+        try:
+            print("Training LBPH...")
+            if self.recognizer_lbph.train(config.DATASET_DIR):
+                self.recognizer_lbph.load_model()  # Reload
+                status_msg += "✓ LBPH: Success\n"
+            else:
+                status_msg += "✗ LBPH: Failed\n"
+        except Exception as e:
+            status_msg += f"✗ LBPH Error: {e}\n"
+
+        # 2. OpenFace
+        if FACE_RECOGNITION_AVAILABLE:
+            try:
+                print("Training OpenFace...")
+                if self.recognizer_openface.train(config.DATASET_DIR):
+                    self.recognizer_openface.load_encodings()  # Reload
+                    status_msg += "✓ OpenFace: Success\n"
+                else:
+                    status_msg += "✗ OpenFace: Failed\n"
+            except Exception as e:
+                status_msg += f"✗ OpenFace Error: {e}\n"
+        else:
+            status_msg += "- OpenFace: Not available\n"
+
+        # 3. SFace
+        if SFACE_RECOGNITION_AVAILABLE:
+            try:
+                print("Training SFace...")
+                if self.recognizer_sface.train(config.DATASET_DIR):
+                    self.recognizer_sface.load_embeddings()  # Reload
+                    status_msg += "✓ SFace: Success\n"
+                else:
+                    status_msg += "✗ SFace: Failed\n"
+            except Exception as e:
+                status_msg += f"✗ SFace Error: {e}\n"
+        else:
+            status_msg += "- SFace: Not available\n"
+
+        self.reload_recognition = True
+        return status_msg
 
     def _launch_capture_window(self, name):
         """
