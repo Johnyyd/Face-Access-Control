@@ -4,6 +4,9 @@ from PIL import Image
 import time
 from typing import Optional
 import numpy as np
+import os
+import shutil
+import datetime
 
 from modules.camera import CameraManager
 from modules.detector import FaceDetector
@@ -12,6 +15,7 @@ from modules.recognizer_openface import OpenFaceRecognizer
 from modules.recognizer_sface import SFaceRecognizer
 from modules.database import Database
 import config
+import capture_dataset  # Import external capture logic
 
 # Check if face_recognition is available
 try:
@@ -39,6 +43,11 @@ class GradioMainWindow:
 
         # State
         self.is_running = False
+        self.latest_frame = None  # To store the current frame for capture
+        self.latest_face_roi = None  # To store the current face for capture
+        self.reload_recognition = (
+            False  # Flag to force recognition loop to reset its cache
+        )
 
         # We store these as simple values or standard python types,
         # but in Gradio they will be driven by component values.
@@ -143,8 +152,12 @@ class GradioMainWindow:
                         self.start_btn = gr.Button("Start", variant="primary")
                         self.stop_btn = gr.Button("Stop", variant="stop")
 
-                    # User Management (Placeholders)
+                    # User Management
                     gr.Markdown("#### User Management")
+                    self.mgmt_name_input = gr.Textbox(
+                        label="User Name",
+                        placeholder="Enter name BEFORE clicking New/Update",
+                    )
                     with gr.Row():
                         self.new_user_btn = gr.Button("New User")
                         self.delete_user_btn = gr.Button("Delete User")
@@ -161,14 +174,12 @@ class GradioMainWindow:
                     label="FPS", value="FPS: 0", interactive=False
                 )
 
-            # --- Logs Panel (Hidden by default, shown on click) ---
+            # --- Logs Panel ---
             self.logs_output = gr.TextArea(label="Access Logs", visible=False)
 
             # --- Event Bindings ---
 
             # Start/Stop
-            # Start triggers the generator loop
-            # Output targets: video_feed, status_text, fps_text, user info fields
             self.start_btn.click(
                 fn=self._start_recognition,
                 inputs=[self.method_radio, self.detection_radio, self.threshold_slider],
@@ -178,6 +189,8 @@ class GradioMainWindow:
                     self.fps_text,
                     self.user_name_text,
                     self.user_last_access,
+                    self.user_image_cam,
+                    self.user_image_db,
                 ],
             )
 
@@ -203,6 +216,26 @@ class GradioMainWindow:
                 inputs=[self.threshold_slider, self.method_radio],
             )
 
+            # User Management Actions
+            # Launch Capture Window for New/Update
+            self.new_user_btn.click(
+                fn=self._launch_capture_window,
+                inputs=[self.mgmt_name_input],
+                outputs=[self.status_text, self.user_image_cam, self.user_image_db],
+            )
+
+            self.update_user_btn.click(
+                fn=self._launch_capture_window,
+                inputs=[self.mgmt_name_input],
+                outputs=[self.status_text, self.user_image_cam, self.user_image_db],
+            )
+
+            self.delete_user_btn.click(
+                fn=self._delete_user,
+                inputs=[self.mgmt_name_input],
+                outputs=[self.status_text],
+            )
+
             # View Logs
             self.logs_btn.click(fn=self._view_logs, outputs=[self.logs_output])
 
@@ -210,7 +243,7 @@ class GradioMainWindow:
 
     def _start_recognition(self, method_name, detection_name, threshold):
         """Start the recognition loop generator"""
-        # Validations similar to Tkinter
+        # Validations
         self.current_method = method_name
         self.current_detection = detection_name
 
@@ -236,7 +269,7 @@ class GradioMainWindow:
 
         self.is_running = True
 
-        # Update detector and threshold before loop
+        # Update detector and threshold
         if self.detector:
             self.detector.switch_method(detection_name)
 
@@ -252,28 +285,146 @@ class GradioMainWindow:
         self.camera.release()
         return "Stopped"
 
+    def _launch_capture_window(self, name):
+        """
+        Launch the standalone capture window (capture_dataset.py logic)
+        This stops the Main Loop first to free the camera.
+        """
+        # Debug print
+        print(f"DEBUG: Launching capture window for {name}")
+
+        if not name or name.strip() == "":
+            return (
+                "Error: Name cannot be empty. Please enter a name first.",
+                gr.update(),
+                gr.update(),
+            )
+
+        # 1. Stop current recognition loop logic if running
+        if self.is_running:
+            self.is_running = False
+            self.camera.release()
+            time.sleep(
+                1.0
+            )  # Wait for camera to be fully released by the generator thread
+            # Note: The Gradio loop thread will see self.is_running=False and exit.
+
+        try:
+            # 2. Call the capture function from capture_dataset.py
+            # This will open a CV2 window on the server/local machine.
+            # Assuming defaults: 20 images, auto_detect=True
+            success = capture_dataset.capture_images(
+                name, num_images=50, auto_detect=True
+            )
+
+            if success:
+                self.reload_recognition = True
+                return (
+                    f"Success: Captured images for '{name}'. Please Click START to resume recognition.",
+                    None,
+                    None,
+                )
+            else:
+                return "Capture failed or cancelled.", None, None
+
+        except Exception as e:
+            print(f"DEBUG: Error in capture process: {e}")
+            return f"Error executing capture: {e}", gr.update(), gr.update()
+
+    def _delete_user(self, name):
+        """Delete user directory"""
+        if not name or name.strip() == "":
+            return "Error: Name cannot be empty"
+
+        user_dir = os.path.join(config.DATASET_DIR, name)
+        if os.path.exists(user_dir):
+            try:
+                shutil.rmtree(user_dir)
+                self.reload_recognition = True  # Also reload logic
+                return f"Success: User '{name}' deleted."
+            except Exception as e:
+                return f"Error deleting user: {e}"
+        else:
+            return f"Error: User '{name}' does not exist."
+
+    def _get_user_db_image(self, name):
+        """Retrieve a representative image from the database for the user"""
+        if name == config.UNKNOWN_PERSON_NAME:
+            return None
+
+        user_dir = os.path.join(config.DATASET_DIR, name)
+
+        if os.path.exists(user_dir):
+            images = [
+                f
+                for f in os.listdir(user_dir)
+                if f.lower().endswith((".jpg", ".png", ".jpeg"))
+            ]
+            if images:
+                # Pick the first one
+                img_path = os.path.join(user_dir, images[0])
+                # Read and convert to RGB
+                try:
+                    img = cv2.imread(img_path)
+                    if img is not None:
+                        return cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                except:
+                    pass
+        return None
+
     def _recognition_loop(self):
         """Main loop yielding frames"""
         self.frame_count = 0
         self.fps_start_time = time.time()
 
+        # State tracking for optimization
+        last_recognized_name = None
+        cached_db_image = None
+
         while self.is_running:
+            # Ensure camera is open (e.g. if restarted loop)
+            if not self.camera.is_opened():
+                try:
+                    self.camera.open()
+                except:
+                    time.sleep(1)
+                    continue
+
             ret, frame = self.camera.read()
             if not ret:
+                time.sleep(0.1)
                 continue
+
+            # Store raw frame and reset roi
+            self.latest_frame = frame.copy()
+            self.latest_face_roi = None
+
+            # Check forced reload (e.g. from New/Delete user)
+            if self.reload_recognition:
+                last_recognized_name = None
+                cached_db_image = None
+                self.reload_recognition = False
 
             # Detect faces
             try:
                 faces = self.detector.detect_faces(frame)
             except Exception as e:
-                # If detection fails, just show frame
                 faces = []
 
+            # Defaults for this frame
             current_name = "Unknown"
             current_status = ""
+            current_face_crop_rgb = None
+
+            # Clear cache if no faces found
+            if not faces:
+                last_recognized_name = None
+                cached_db_image = None
 
             for x, y, w, h in faces:
+                # Extract Face ROI (BGR)
                 face_roi = frame[y : y + h, x : x + w]
+                self.latest_face_roi = face_roi.copy()  # Store for snapshot
 
                 # Recognize
                 name = config.UNKNOWN_PERSON_NAME
@@ -291,7 +442,7 @@ class GradioMainWindow:
                 color = config.COLOR_SUCCESS if is_granted else config.COLOR_DENIED
                 status_str = "GRANTED" if is_granted else "DENIED"
 
-                # Visualization on frame
+                # Visualization matches Config
                 cv2.rectangle(
                     frame, (x, y), (x + w, y + h), color, config.BBOX_THICKNESS
                 )
@@ -318,9 +469,27 @@ class GradioMainWindow:
                     )
                     self.last_access_time[name] = current_time
 
-                # Update current info for GUI side panel (just taking the last face found)
+                # Update current info for GUI
                 current_name = name
                 current_status = f"Last Access: {time.strftime('%H:%M:%S')}"
+
+                # Prepare LIVE face crop
+                # Important: Gradio Image expects arrays. We must ensure this is a valid array.
+                try:
+                    current_face_crop_rgb = cv2.cvtColor(face_roi, cv2.COLOR_BGR2RGB)
+                except:
+                    current_face_crop_rgb = None
+
+                # Update DB Image with Caching
+                if name != last_recognized_name:
+                    last_recognized_name = name
+                    if name != config.UNKNOWN_PERSON_NAME:
+                        cached_db_image = self._get_user_db_image(name)
+                    else:
+                        cached_db_image = None
+
+                # Break after first face
+                break
 
             # FPS
             self.frame_count += 1
@@ -330,6 +499,7 @@ class GradioMainWindow:
                 self.frame_count = 0
                 self.fps_start_time = time.time()
 
+            # OSD
             cv2.putText(
                 frame,
                 f"FPS: {self.fps}",
@@ -339,8 +509,6 @@ class GradioMainWindow:
                 config.COLOR_TEXT,
                 config.FONT_THICKNESS,
             )
-
-            # Info Text on Frame
             info_text = (
                 f"{self.current_method.upper()} | {self.current_detection.upper()}"
             )
@@ -354,30 +522,27 @@ class GradioMainWindow:
                 config.FONT_THICKNESS,
             )
 
-            # Convert to RGB for Gradio
+            # Convert main frame to RGB
             frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-            # Yield updates
-            # Outputs: video_feed, status_text, fps_text, user_name_text, user_last_access
+            # Yield outcomes
             yield (
                 frame_rgb,
-                "Running...",
+                (
+                    "User recognized"
+                    if current_name != config.UNKNOWN_PERSON_NAME
+                    and current_name != "Unknown"
+                    else "Scanning..."
+                ),
                 f"FPS: {self.fps}",
                 f"Name: {current_name}",
                 current_status,
+                current_face_crop_rgb,
+                cached_db_image,
             )
 
-            # Small sleep to prevent tight loop if needed, but grab() usually blocks enough
-            time.sleep(0.01)
-
-            # outputs=[
-            #         self.video_feed,
-            #         self.status_text,
-            #         self.fps_text,
-            #         self.user_name_text,
-            #         self.user_last_access,
-            #     ],
-            # return frame, status_str, fps_str, current_name, current_status
+            # Sleep
+            time.sleep(0.02)
 
     def _on_method_change(self, method):
         """Handle method change"""
