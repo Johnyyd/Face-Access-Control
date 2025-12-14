@@ -158,6 +158,8 @@ def main():
                 print("\n" + "=" * 60)
                 print("APPLICATION CLOSED")
                 print("=" * 60)
+            if choice == 3:
+                break
 
 
     except Exception as e:
