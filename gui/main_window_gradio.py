@@ -53,7 +53,19 @@ class GradioMainWindow:
         # but in Gradio they will be driven by component values.
         self.current_method = config.DEFAULT_RECOGNITION_METHOD
         self.current_detection = config.DEFAULT_DETECTION_METHOD
-        self.threshold_value = config.LBPH_CONFIDENCE_THRESHOLD
+
+        # Initialize separate thresholds
+        self.threshold_lbph = config.LBPH_CONFIDENCE_THRESHOLD
+        self.threshold_openface = 0.6
+        self.threshold_sface = 0.4
+
+        # Set initial value based on default method
+        if self.current_method == "lbph":
+            self.threshold_value = self.threshold_lbph
+        elif self.current_method == "openface":
+            self.threshold_value = self.threshold_openface
+        else:
+            self.threshold_value = self.threshold_sface
 
         # FPS tracking
         self.fps = 0
@@ -83,18 +95,24 @@ class GradioMainWindow:
         # Load LBPH model if exists
         if self.database.model_exists("lbph"):
             self.recognizer_lbph.load_model()
+            # Sync threshold
+            self.recognizer_lbph.update_threshold(self.threshold_lbph)
 
         # Initialize OpenFace if available
         if FACE_RECOGNITION_AVAILABLE:
             self.recognizer_openface = OpenFaceRecognizer()
             if self.database.model_exists("openface"):
                 self.recognizer_openface.load_encodings()
+                # Sync threshold
+                self.recognizer_openface.update_threshold(self.threshold_openface)
 
         # Initialize SFace if available
         if SFACE_RECOGNITION_AVAILABLE:
             self.recognizer_sface = SFaceRecognizer()
             if self.database.model_exists("sface"):
                 self.recognizer_sface.load_embeddings()
+                # Sync threshold
+                self.recognizer_sface.update_threshold(self.threshold_sface)
 
     def _create_gui(self):
         """Create Gradio GUI layout"""
@@ -140,11 +158,13 @@ class GradioMainWindow:
                     )
 
                     # Threshold
+                    # Initial Config based on Default Method (LBPH)
                     self.threshold_slider = gr.Slider(
                         minimum=0,
-                        maximum=100,
-                        value=self.threshold_value,
-                        label="Threshold",
+                        maximum=200,
+                        value=self.threshold_lbph,
+                        step=1,
+                        label="LBPH Distance (Lower is Stricter)",
                     )
 
                     # Start/Stop Buttons
@@ -166,8 +186,6 @@ class GradioMainWindow:
                         self.update_user_btn = gr.Button("Update User")
                         self.train_btn = gr.Button("Train Models", variant="secondary")
 
-                    self.logs_btn = gr.Button("View Access Logs")
-
             # --- Status Panel ---
             with gr.Row():
                 self.status_text = gr.Textbox(
@@ -178,7 +196,13 @@ class GradioMainWindow:
                 )
 
             # --- Logs Panel ---
-            self.logs_output = gr.TextArea(label="Access Logs", visible=False)
+            with gr.Row():
+                with gr.Accordion("Access Logs", open=False):
+                    self.logs_refresh_btn = gr.Button("Refresh Logs")
+                    # Using gr.Code for better monospace formatting of logs, or Textbox
+                    self.logs_output = gr.Code(
+                        label="Log Data", language=None, lines=20
+                    )
 
             # --- Event Bindings ---
 
@@ -243,7 +267,7 @@ class GradioMainWindow:
             self.train_btn.click(fn=self._train_models, outputs=[self.status_text])
 
             # View Logs
-            self.logs_btn.click(fn=self._view_logs, outputs=[self.logs_output])
+            self.logs_refresh_btn.click(fn=self._view_logs, outputs=[self.logs_output])
 
         return demo
 
@@ -601,10 +625,49 @@ class GradioMainWindow:
             time.sleep(0.02)
 
     def _on_method_change(self, method):
-        """Handle method change"""
+        """Handle method change - Update Threshold Slider"""
         self.current_method = method
-        val = config.LBPH_CONFIDENCE_THRESHOLD if method == "lbph" else 0.6
-        return val, f"Method switched to {method}"
+
+        status_msg = f"Method switched to {method}"
+
+        # Return gr.update to change slider properties
+        if method == "lbph":
+            return (
+                gr.update(
+                    minimum=0,
+                    maximum=200,
+                    step=1,
+                    value=self.threshold_lbph,
+                    label="LBPH Distance (Lower is Stricter: ~50-80 Good)",
+                ),
+                status_msg,
+            )
+
+        elif method == "openface":
+            return (
+                gr.update(
+                    minimum=0.1,
+                    maximum=2.0,
+                    step=0.05,
+                    value=self.threshold_openface,
+                    label="Euclidean Distance (Lower is Stricter: ~0.6 Default)",
+                ),
+                status_msg,
+            )
+
+        elif method == "sface":
+            return (
+                gr.update(
+                    minimum=0.1,
+                    maximum=2.0,
+                    step=0.05,
+                    value=self.threshold_sface,
+                    label="Cosine Distance (Lower is Stricter: ~0.4 Default)",
+                ),
+                status_msg,
+            )
+
+        return gr.update(), status_msg
 
     def _on_detection_change(self, detection):
         """Handle detection change"""
@@ -614,26 +677,36 @@ class GradioMainWindow:
         return f"Detection switched to {detection}"
 
     def _on_threshold_change(self, value, method):
-        """Handle threshold change"""
+        """Handle threshold change - Save to separate state variables"""
         threshold = float(value)
-        if method == "lbph" and self.recognizer_lbph:
-            self.recognizer_lbph.update_threshold(threshold)
-        elif method == "openface" and self.recognizer_openface:
-            self.recognizer_openface.update_threshold(threshold)
-        elif method == "sface" and self.recognizer_sface:
-            self.recognizer_sface.update_threshold(threshold)
+
+        # Update internal state based on current method
+        if method == "lbph":
+            self.threshold_lbph = threshold
+            if self.recognizer_lbph:
+                self.recognizer_lbph.update_threshold(threshold)
+
+        elif method == "openface":
+            self.threshold_openface = threshold
+            if self.recognizer_openface:
+                self.recognizer_openface.update_threshold(threshold)
+
+        elif method == "sface":
+            self.threshold_sface = threshold
+            if self.recognizer_sface:
+                self.recognizer_sface.update_threshold(threshold)
 
     def _view_logs(self):
         """Fetch logs and show"""
         logs = self.database.read_access_logs(limit=50)
         if not logs:
-            return gr.update(value="No logs found.", visible=True)
+            return gr.update(value="No logs found.")
 
         log_text = "Recent Access Logs (Latest 50):\n" + "=" * 50 + "\n"
         for log in reversed(logs):
             log_text += f"{log['timestamp']} | {log['name']} | {log['method']} | {log['status']}\n"
 
-        return gr.update(value=log_text, visible=True)
+        return gr.update(value=log_text)
 
     def launch(self):
         self.demo.launch()

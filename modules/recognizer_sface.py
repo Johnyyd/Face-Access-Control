@@ -265,8 +265,8 @@ class SFaceRecognizer:
             for known_embedding in self.known_embeddings:
                 # Cosine similarity
                 distance = self.model.match(
-                    embedding.reshape(1, -1),
-                    known_embedding.reshape(1, -1),
+                    embedding.astype(np.float32).reshape(1, -1),
+                    known_embedding.astype(np.float32).reshape(1, -1),
                     cv2.FaceRecognizerSF_FR_COSINE,
                 )
                 distances.append(distance)
