@@ -142,7 +142,8 @@ def main():
     print("\nLaunching GUI...")
 
     try:
-        while True:
+        flag = True
+        while flag:
             choice = int(input("Nhập lựa chọn: "))
             if choice == 1:
                 app1 = GradioMainWindow()
@@ -159,7 +160,7 @@ def main():
                 print("APPLICATION CLOSED")
                 print("=" * 60)
             if choice == 3:
-                break
+                flag = False
 
 
     except Exception as e:
