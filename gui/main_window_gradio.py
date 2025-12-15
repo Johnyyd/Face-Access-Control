@@ -139,7 +139,7 @@ class GradioMainWindow:
                         maximum=2.0,
                         value=self.threshold_sface,
                         step=0.05,
-                        label="osine Distance (Lower is Stricter: ~0.4 Default)",
+                        label="Cosine Distance (Lower is Stricter: ~0.4 Default)",
                     )
 
                     # Start/Stop Buttons
@@ -293,7 +293,7 @@ class GradioMainWindow:
             time.sleep(1.0)
 
         status_msg = "Training Results:\n"
-        
+
         # train SFace
         if SFACE_RECOGNITION_AVAILABLE:
             try:
@@ -456,11 +456,7 @@ class GradioMainWindow:
                 name = config.UNKNOWN_PERSON_NAME
                 score = 0.0
 
-                if self.current_method == "lbph":
-                    name, score = self.recognizer_lbph.predict(face_roi)
-                elif self.current_method == "openface":
-                    name, score = self.recognizer_openface.predict(face_roi)
-                else:  # sface
+                if self.current_method == "sface":  # sface
                     name, score = self.recognizer_sface.predict(face_roi)
 
                 # Determine access status
@@ -577,7 +573,7 @@ class GradioMainWindow:
         status_msg = f"Method switched to {method}"
 
         # Return gr.update to change slider properties
-        
+
         if method == "sface":
             return (
                 gr.update(
@@ -595,8 +591,7 @@ class GradioMainWindow:
     def _on_detection_change(self, detection):
         """Handle detection change"""
         self.current_detection = detection
-        if self.detector:
-            self.detector.switch_method(detection)
+        # YuNetDetector supports only yunet, no switch needed
         return f"Detection switched to {detection}"
 
     def _on_threshold_change(self, value, method):
