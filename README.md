@@ -23,6 +23,7 @@ python capture_dataset.py
 ```bash
 python train_lbph.py      # Nhanh
 python train_openface.py  # Chính xác
+python train_sface.py 
 ```
 
 ### 4. Chạy
@@ -37,9 +38,7 @@ python main.py
 | ------------ | -------- | --------- | ------------- |
 | **LBPH**     | 70-85%   | 30-40 FPS | Cần tốc độ    |
 | **OpenFace** | 85-95%   | 10-15 FPS | Cần chính xác |
-
-# Thiếu so sánh với SFace
-
+| **SFace**    | 
 ## ⚙️ Config
 
 Chỉnh `config.py`:
@@ -47,7 +46,7 @@ Chỉnh `config.py`:
 ```python
 LBPH_CONFIDENCE_THRESHOLD = 90.0
 OPENFACE_DISTANCE_THRESHOLD = 0.6
-DEFAULT_RECOGNITION_METHOD = 'lbph'  # hoặc 'openface'
+DEFAULT_RECOGNITION_METHOD = 'lbph', 'sface'  # hoặc 'openface'
 ```
 
 ## 🐛 Troubleshooting
@@ -61,19 +60,59 @@ DEFAULT_RECOGNITION_METHOD = 'lbph'  # hoặc 'openface'
 ## 📁 Cấu trúc
 
 ```
-Face-Access-Control/
-├── main.py                    # Chạy app
-├── config.py                  # Cấu hình
-├── modules/                   # Core
-│   ├── camera.py
-│   ├── detector.py
-│   ├── recognizer_lbph.py
-│   ├── recognizer_openface.py
-│   └── database.py
-├── gui/                       # Giao diện
-├── dataset/                   # Ảnh training
-├── models/                    # Models đã train
-└── logs/                      # Access logs
+Face-Access-Control
+    ├── .gradio
+    │   └── certificate.pem
+    ├── dataset
+    │   ├── khactrieu
+    │   ├── minhtri
+    │   ├── trongtri
+    ├── gui
+    │   ├── __init__.py
+    │   ├── main_window_gradio.py
+    │   └── main_window_tkinter.py
+    ├── models
+    │   ├── dnn
+    │   │   ├── deploy.prototxt
+    │   │   └── res10_300x300_ssd_iter_140000.caffemodel
+    │   ├── haar
+    │   │   └── haarcascade_frontalface_default.xml
+    │   ├── lbph
+    │   │   ├── mapping.json
+    │   │   └── trainer.yml
+    │   ├── openface
+    │   │   └── embeddings.pickle
+    │   ├── sface
+    │   │   └── face_recognition_sface_2021dec.onnx
+    │   └── yunet
+    │       └── face_detection_yunet_2023mar.onnx
+    ├── modules
+    │   ├── __init__.py
+    │   ├── camera.py
+    │   ├── database.py
+    │   ├── detector_yunet.py
+    │   ├── detector.py
+    │   ├── recognizer_lbph.py
+    │   ├── recognizer_openface.py
+    │   └── recognizer_sface.py
+    ├── .gitattributes
+    ├── .gitignore
+    ├── capture_dataset.py
+    ├── check_dataset.py
+    ├── config.py
+    ├── description.md
+    ├── download_models.py
+    ├── image.png
+    ├── main.py
+    ├── QUICKSTART.md
+    ├── README.md
+    ├── requirements.txt
+    ├── TEAM_DIVISION.md
+    ├── test_logs.py
+    ├── train_lbph.py
+    ├── train_openface.py
+    └── train_sface.py
+
 ```
 
 ## 📝 License
