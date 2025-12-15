@@ -1,7 +1,5 @@
 # PHÂN CHIA CÔNG VIỆC - FACE ACCESS CONTROL SYSTEM
 
-Dựa trên hệ thống LBPH + OpenFace Recognition
-
 ---
 
 ## 👤 Member 1: Backend Core & Detection (35%)
