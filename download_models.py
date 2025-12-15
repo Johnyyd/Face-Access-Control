@@ -41,27 +41,20 @@ def main():
     
     models = []
     
-    # 1. Haar Cascade (Required)
+   
+    # 1. YuNet (Face Detection - Recommended)
     models.append({
-        'name': 'Haar Cascade',
-        'url': 'https://raw.githubusercontent.com/opencv/opencv/master/data/haarcascades/haarcascade_frontalface_default.xml',
-        'output': 'models/haarcascade_frontalface_default.xml',
-        'required': True
-    })
-    
-    # 2. DNN Prototxt (Optional)
-    models.append({
-        'name': 'DNN Prototxt',
-        'url': 'https://raw.githubusercontent.com/opencv/opencv/master/samples/dnn/face_detector/deploy.prototxt',
-        'output': 'models/deploy.prototxt',
+        'name': 'YuNet Face Detector',
+        'url': 'https://github.com/opencv/opencv_zoo/raw/main/models/face_detection_yunet/face_detection_yunet_2023mar.onnx',
+        'output': 'models/face_detection_yunet_2023mar.onnx',
         'required': False
     })
     
-    # 3. DNN Caffemodel (Optional)
+    # 2. SFace (Face Recognition - Recommended)
     models.append({
-        'name': 'DNN Caffemodel',
-        'url': 'https://github.com/opencv/opencv_3rdparty/raw/dnn_samples_face_detector_20170830/res10_300x300_ssd_iter_140000.caffemodel',
-        'output': 'models/res10_300x300_ssd_iter_140000.caffemodel',
+        'name': 'SFace Face Recognizer',
+        'url': 'https://github.com/opencv/opencv_zoo/raw/main/models/face_recognition_sface/face_recognition_sface_2021dec.onnx',
+        'output': 'models/face_recognition_sface_2021dec.onnx',
         'required': False
     })
     
@@ -72,7 +65,6 @@ def main():
         print(f"{i}. {model['name']} ({status}) - {exists}")
     
     print("\n" + "=" * 60)
-    print("NOTE: FaceNet model (~90MB) must be downloaded manually")
     print("See MODELS_DOWNLOAD.md for instructions")
     print("=" * 60)
     
@@ -118,31 +110,15 @@ def main():
     print("=" * 60)
     
     all_models = {
-        'Haar Cascade': 'models/haarcascade_frontalface_default.xml',
-        'DNN Prototxt': 'models/deploy.prototxt',
-        'DNN Caffemodel': 'models/res10_300x300_ssd_iter_140000.caffemodel',
-        'FaceNet': 'models/facenet_keras.h5'
+        'YuNet Detector': 'models/yunet/face_detection_yunet_2023mar.onnx',
+        'SFace Recognizer': 'models/sface/face_recognition_sface_2021dec.onnx'
     }
     
     for name, path in all_models.items():
         if os.path.exists(path):
-            size = os.path.getsize(path) / (1024 * 1024)  # MB
-            print(f"✓ {name}: {path} ({size:.2f} MB)")
+            print(f"✓ {name} - {path}")
         else:
-            print(f"✗ {name}: {path} (MISSING)")
-    
-    print("\n" + "=" * 60)
-    
-    # Hướng dẫn tiếp theo
-    if not os.path.exists('models/facenet_keras.h5'):
-        print("\nNEXT STEPS:")
-        print("1. Download FaceNet model manually (see MODELS_DOWNLOAD.md)")
-        print("2. Place facenet_keras.h5 in models/ directory")
-        print("3. Run: python train_lbph.py or python train_facenet.py")
-    else:
-        print("\n✓ All models ready!")
-        print("Next: python train_lbph.py or python train_facenet.py")
-    
+            print(f"✗ {name} - {path} (MISSING)")
     print("=" * 60)
 
 

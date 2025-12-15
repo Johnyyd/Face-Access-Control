@@ -1,1 +1,0 @@
-# LBPH face recognition module

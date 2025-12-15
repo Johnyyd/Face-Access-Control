@@ -1,1 +1,0 @@
-# LBPH training script
