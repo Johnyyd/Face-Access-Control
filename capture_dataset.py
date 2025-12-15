@@ -102,7 +102,7 @@ def capture_images(name: str, num_images: int = 20, auto_detect: bool = True):
                     )
 
             # Hiển thị progress
-            progress_text = f"Captured: {count}/{num_images}"
+            progress_text = f"Captured: {count_images}/{num_images}"
             cv2.putText(
                 display_frame,
                 progress_text,
@@ -151,11 +151,11 @@ def capture_images(name: str, num_images: int = 20, auto_detect: bool = True):
         camera.release()
 
         print("\n" + "=" * 60)
-        print(f"✓ Captured {count} images for {name}")
+        print(f"✓ Captured {count_images} images for {name}")
         print(f"✓ Saved to: {user_dir}")
         print("=" * 60)
 
-        return count >= config.MIN_IMAGES_PER_PERSON
+        return count_images >= config.MIN_IMAGES_PER_PERSON
 
     except Exception as e:
         print(f"\n✗ Error during capture: {e}")
@@ -208,4 +208,6 @@ def main():
     print("\n" + "=" * 60)
     print("STARTING CAPTURE...")
     print("=" * 60)
+    capture_images(name, num_images, auto_detect)
+if __name__ == "__main__":
     main()
