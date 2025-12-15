@@ -74,3 +74,5 @@ htmlcov/
 
 # Detected faces (if enabled)
 detected_faces/
+
+tree.txt
