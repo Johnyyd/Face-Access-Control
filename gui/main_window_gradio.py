@@ -9,9 +9,7 @@ import shutil
 import datetime
 
 from modules.camera import CameraManager
-from modules.detector import FaceDetector
-from modules.recognizer_lbph import LBPHRecognizer
-from modules.recognizer_openface import OpenFaceRecognizer
+from modules.detector_yunet import YuNetDetector
 from modules.recognizer_sface import SFaceRecognizer
 from modules.database import Database
 import config
@@ -35,9 +33,7 @@ class GradioMainWindow:
     def __init__(self):
         # Components
         self.camera: Optional[CameraManager] = None
-        self.detector: Optional[FaceDetector] = None
-        self.recognizer_lbph: Optional[LBPHRecognizer] = None
-        self.recognizer_openface: Optional[OpenFaceRecognizer] = None
+        self.detector: Optional[YuNetDetector] = None
         self.recognizer_sface: Optional[SFaceRecognizer] = None
         self.database = Database()
 
@@ -55,16 +51,10 @@ class GradioMainWindow:
         self.current_detection = config.DEFAULT_DETECTION_METHOD
 
         # Initialize separate thresholds
-        self.threshold_lbph = config.LBPH_CONFIDENCE_THRESHOLD
-        self.threshold_openface = 0.6
         self.threshold_sface = 0.4
 
         # Set initial value based on default method
-        if self.current_method == "lbph":
-            self.threshold_value = self.threshold_lbph
-        elif self.current_method == "openface":
-            self.threshold_value = self.threshold_openface
-        else:
+        if self.current_method == "sface":
             self.threshold_value = self.threshold_sface
 
         # FPS tracking
@@ -87,24 +77,10 @@ class GradioMainWindow:
         self.camera = CameraManager()
 
         # Initialize detector
-        self.detector = FaceDetector(method=self.current_detection)
+        self.detector = YuNetDetector()
 
         # Initialize recognizers
-        self.recognizer_lbph = LBPHRecognizer()
-
-        # Load LBPH model if exists
-        if self.database.model_exists("lbph"):
-            self.recognizer_lbph.load_model()
-            # Sync threshold
-            self.recognizer_lbph.update_threshold(self.threshold_lbph)
-
-        # Initialize OpenFace if available
-        if FACE_RECOGNITION_AVAILABLE:
-            self.recognizer_openface = OpenFaceRecognizer()
-            if self.database.model_exists("openface"):
-                self.recognizer_openface.load_encodings()
-                # Sync threshold
-                self.recognizer_openface.update_threshold(self.threshold_openface)
+        self.recognizer_sface = SFaceRecognizer()
 
         # Initialize SFace if available
         if SFACE_RECOGNITION_AVAILABLE:
@@ -144,15 +120,14 @@ class GradioMainWindow:
 
                     # Recognition Method
                     self.method_radio = gr.Radio(
-                        choices=["lbph", "openface", "sface"],
+                        choices=["sface"],
                         value=self.current_method,
                         label="Recognition Method",
-                        info="Select recognition algorithm",
                     )
 
                     # Detection Method
                     self.detection_radio = gr.Radio(
-                        choices=["haar", "dnn", "yunet"],
+                        choices=["yunet"],
                         value=self.current_detection,
                         label="Detection Method",
                     )
@@ -160,11 +135,11 @@ class GradioMainWindow:
                     # Threshold
                     # Initial Config based on Default Method (LBPH)
                     self.threshold_slider = gr.Slider(
-                        minimum=0,
-                        maximum=200,
-                        value=self.threshold_lbph,
-                        step=1,
-                        label="LBPH Distance (Lower is Stricter)",
+                        minimum=0.1,
+                        maximum=2.0,
+                        value=self.threshold_sface,
+                        step=0.05,
+                        label="Cosine Distance (Lower is Stricter: ~0.4 Default)",
                     )
 
                     # Start/Stop Buttons
@@ -299,10 +274,6 @@ class GradioMainWindow:
 
         self.is_running = True
 
-        # Update detector and threshold
-        if self.detector:
-            self.detector.switch_method(detection_name)
-
         # Initial threshold update
         self._on_threshold_change(threshold, method_name)
 
@@ -323,32 +294,7 @@ class GradioMainWindow:
 
         status_msg = "Training Results:\n"
 
-        # 1. LBPH
-        try:
-            print("Training LBPH...")
-            if self.recognizer_lbph.train(config.DATASET_DIR):
-                self.recognizer_lbph.load_model()  # Reload
-                status_msg += "✓ LBPH: Success\n"
-            else:
-                status_msg += "✗ LBPH: Failed\n"
-        except Exception as e:
-            status_msg += f"✗ LBPH Error: {e}\n"
-
-        # 2. OpenFace
-        if FACE_RECOGNITION_AVAILABLE:
-            try:
-                print("Training OpenFace...")
-                if self.recognizer_openface.train(config.DATASET_DIR):
-                    self.recognizer_openface.load_encodings()  # Reload
-                    status_msg += "✓ OpenFace: Success\n"
-                else:
-                    status_msg += "✗ OpenFace: Failed\n"
-            except Exception as e:
-                status_msg += f"✗ OpenFace Error: {e}\n"
-        else:
-            status_msg += "- OpenFace: Not available\n"
-
-        # 3. SFace
+        # train SFace
         if SFACE_RECOGNITION_AVAILABLE:
             try:
                 print("Training SFace...")
@@ -420,6 +366,11 @@ class GradioMainWindow:
         if os.path.exists(user_dir):
             try:
                 shutil.rmtree(user_dir)
+
+                # Update SFace embeddings
+                if SFACE_RECOGNITION_AVAILABLE and self.recognizer_sface:
+                    self.recognizer_sface.delete_user(name)
+
                 self.reload_recognition = True  # Also reload logic
                 return f"Success: User '{name}' deleted."
             except Exception as e:
@@ -510,11 +461,7 @@ class GradioMainWindow:
                 name = config.UNKNOWN_PERSON_NAME
                 score = 0.0
 
-                if self.current_method == "lbph":
-                    name, score = self.recognizer_lbph.predict(face_roi)
-                elif self.current_method == "openface":
-                    name, score = self.recognizer_openface.predict(face_roi)
-                else:  # sface
+                if self.current_method == "sface":  # sface
                     name, score = self.recognizer_sface.predict(face_roi)
 
                 # Determine access status
@@ -631,31 +578,8 @@ class GradioMainWindow:
         status_msg = f"Method switched to {method}"
 
         # Return gr.update to change slider properties
-        if method == "lbph":
-            return (
-                gr.update(
-                    minimum=0,
-                    maximum=200,
-                    step=1,
-                    value=self.threshold_lbph,
-                    label="LBPH Distance (Lower is Stricter: ~50-80 Good)",
-                ),
-                status_msg,
-            )
 
-        elif method == "openface":
-            return (
-                gr.update(
-                    minimum=0.1,
-                    maximum=2.0,
-                    step=0.05,
-                    value=self.threshold_openface,
-                    label="Euclidean Distance (Lower is Stricter: ~0.6 Default)",
-                ),
-                status_msg,
-            )
-
-        elif method == "sface":
+        if method == "sface":
             return (
                 gr.update(
                     minimum=0.1,
@@ -672,8 +596,7 @@ class GradioMainWindow:
     def _on_detection_change(self, detection):
         """Handle detection change"""
         self.current_detection = detection
-        if self.detector:
-            self.detector.switch_method(detection)
+        # YuNetDetector supports only yunet, no switch needed
         return f"Detection switched to {detection}"
 
     def _on_threshold_change(self, value, method):
@@ -681,17 +604,7 @@ class GradioMainWindow:
         threshold = float(value)
 
         # Update internal state based on current method
-        if method == "lbph":
-            self.threshold_lbph = threshold
-            if self.recognizer_lbph:
-                self.recognizer_lbph.update_threshold(threshold)
-
-        elif method == "openface":
-            self.threshold_openface = threshold
-            if self.recognizer_openface:
-                self.recognizer_openface.update_threshold(threshold)
-
-        elif method == "sface":
+        if method == "sface":
             self.threshold_sface = threshold
             if self.recognizer_sface:
                 self.recognizer_sface.update_threshold(threshold)
