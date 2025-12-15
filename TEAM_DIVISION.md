@@ -1,6 +1,6 @@
-# PHÂN CHIA CÔNG VIỆC - FACE ACCESS CONTROL SYSTEM
+# PHÂN CHIA CÔNG VIỆC - FACE ACCESS CONTROL SYSTEM (V2.0)
 
-Dựa trên hệ thống LBPH + OpenFace Recognition
+Dựa trên hệ thống SFace Recognition + YuNet Detection + Gradio UI
 
 ---
 
@@ -11,51 +11,44 @@ Dựa trên hệ thống LBPH + OpenFace Recognition
 **Camera Management**:
 
 - Quản lý webcam (open, read, release)
-- Context manager support
-- FPS control
+- Tối ưu hóa FPS
+- Xử lý lỗi kết nối camera
 
-**Face Detection**:
+**Face Detection (YuNet)**:
 
-- Haar Cascade implementation
-- DNN detection implementation
-- Switchable detection methods
-- Bounding box extraction
+- Tích hợp YuNet ONNX Model
+- Xử lý 5 landmarks (mắt, mũi, miệng)
+- Tối ưu hóa preprocessing (resize, input scaling)
+- Lọc nhiễu (Score threshold, NMS threshold)
 
 **Database & Storage**:
 
-- Model persistence (LBPH, OpenFace)
-- Access logging (CSV)
-- File I/O operations
+- Quản lý file Embeddings (Pickle)
+- Ghi log ra vào hệ thống (CSV)
+- Load/Save model checkpoints
 
 ### Files phụ trách
 
 ```
 modules/
-├── camera.py           # Camera management
-├── detector.py         # Face detection (Haar/DNN)
-└── database.py         # Storage & logging
+├── camera.py           # Camera processing
+├── detector_yunet.py   # YuNet Implementation
+└── database.py         # Storage logic
 
 models/
-├── haarcascade_frontalface_default.xml
-├── deploy.prototxt
-└── res10_300x300_ssd_iter_140000.caffemodel
-
-logs/
-└── access_log.csv
+└── face_detection_yunet_2023mar.onnx
 ```
 
 ### Dependencies
 
-- OpenCV (cv2)
+- OpenCV (Core)
 - NumPy
-- CSV
 
 ### Deliverables
 
-- [x] Camera class với context manager
-- [x] Dual detection methods (Haar + DNN)
-- [x] Database operations (save/load models)
-- [x] Access logging system
+- [x] Camera Manager ổn định
+- [x] YuNet wrapper class
+- [x] Database I/O utilities
 
 ---
 
@@ -63,60 +56,50 @@ logs/
 
 ### Trách nhiệm chính
 
-**LBPH Recognition**:
+**SFace Recognition**:
 
-- LBPH algorithm implementation
-- Training từ dataset
-- Prediction với confidence score
-- Threshold management
-
-**OpenFace Recognition**:
-
-- OpenFace/dlib integration
-- 128-d embedding extraction
-- Euclidean distance calculation
-- Encoding storage
+- Tích hợp SFace ONNX Model
+- Trích xuất Feature Vector (512 chiều)
+- Tính toán Cosine Distance
+- Quản lý Threshold nhận diện
 
 **Training Pipeline**:
 
-- Dataset validation
-- Feature extraction
-- Model training
-- Performance optimization
+- Script `train_sface.py`
+- Xử lý dataset ảnh đầu vào
+- Tạo và lưu file `embeddings.pkl`
+- Incremental learning (hỗ trợ xóa/thêm user)
+
+**Optimization**:
+
+- Chuẩn hóa ảnh input (112x112)
+- Face Alignment dựa trên landmarks
+- Tối ưu hóa tốc độ matching
 
 ### Files phụ trách
 
 ```
 modules/
-├── recognizer_lbph.py      # LBPH recognition
-└── recognizer_openface.py  # OpenFace recognition
+├── recognizer_sface.py # SFace Logic
 
-train_lbph.py               # LBPH training script
-train_openface.py           # OpenFace training script
+train_sface.py          # Training Script
+download_models.py      # Model Downloader
 
 models/
-├── trainer.yml             # LBPH model
-├── mapping.json            # LBPH label mapping
-└── embeddings.pickle       # OpenFace encodings
-
-dataset/
-└── [username]/             # Training images
+├── face_recognition_sface_2021dec.onnx
+└── embeddings.pkl      # Trained Database
 ```
 
 ### Dependencies
 
-- OpenCV (LBPH)
-- face_recognition (OpenFace)
-- dlib
-- NumPy (< 2.0)
-- Pickle
+- OpenCV (DNN module)
+- NumPy
 
 ### Deliverables
 
-- [x] LBPH recognizer class
-- [x] OpenFace recognizer class
-- [x] Training scripts cho cả 2 methods
-- [x] Threshold tuning support
+- [x] SFace Recognizer Class
+- [x] Training script hoạt động
+- [x] Logic so sánh vector chính xác
 
 ---
 
@@ -124,55 +107,51 @@ dataset/
 
 ### Trách nhiệm chính
 
-**GUI Development**:
+**GUI Development (Gradio)**:
 
-- Tkinter interface
-- Video display
-- Control panel (method selection, threshold slider)
-- Access logs viewer
+- Thiết kế giao diện Web App
+- Hiển thị Camera Stream realtime
+- Dashboard quản lý User (Thêm/Sửa/Xóa)
+- Panels: Logs view, System status
 
 **System Integration**:
 
-- Main application flow
-- Module integration
-- Threading for smooth GUI
-- Error handling
+- Kết nối Detection -> Recognition -> UI
+- Xử lý luồng Capture dataset
+- Quản lý state của ứng dụng
+- Error Handling & User Feedback
 
-**Configuration & Documentation**:
+**Documentation**:
 
-- Config management
-- System documentation
-- User guides
+- Hướng dẫn cài đặt & sử dụng
+- Tài liệu kỹ thuật
+- Deployment guide
 
 ### Files phụ trách
 
 ```
 gui/
-├── __init__.py
-└── main_window.py          # Main GUI
+└── main_window_gradio.py   # Gradio Interface Implementation
 
-main.py                     # Entry point
-config.py                   # Configuration
+main.py                     # Entry Point
+config.py                   # Global Configuration
 
-README.md                   # Main documentation
-QUICKSTART.md              # Quick start guide
-description.md             # Technical specs
-requirements.txt           # Dependencies
+README.md
+QUICKSTART.md
+description.md
 ```
 
 ### Dependencies
 
-- Tkinter (GUI)
-- Pillow (Image display)
-- Threading
+- Gradio (Web UI Framework)
+- OpenCV (Image conversion)
 
 ### Deliverables
 
-- [x] Tkinter GUI với dual method support
-- [x] Real-time video display
-- [x] Control panel (method switching, threshold)
-- [x] Main application integration
-- [x] Documentation
+- [x] Giao diện Web đầy đủ tính năng
+- [x] Kết nối trơn tru với Core modules
+- [x] Tính năng quản lý User (CRUD)
+- [x] Documentation hoàn chỉnh
 
 ---
 
@@ -180,132 +159,65 @@ requirements.txt           # Dependencies
 
 ### Member 1 → Member 2
 
-**Interface**: Detection results
+**Interface**: Aligned Face for Recognition
 
 ```python
-# Member 1 provides
-faces = detector.detect_faces(frame)  # [(x,y,w,h), ...]
+# Member 1 (Detector)
+results = detector.infer(frame) # return faces + landmarks
 
-# Member 2 receives
-for (x,y,w,h) in faces:
-    face_roi = frame[y:y+h, x:x+w]
-    name, score = recognizer.predict(face_roi)
+# Member 2 (Recognizer)
+# Preprocess using landmarks provided by detector
+embedding = recognizer.extract(frame, landmarks)
 ```
 
-### Member 1 → Member 3
+### Member 2 → Member 1
 
-**Interface**: Camera frames & logging
-
-```python
-# Member 1 provides
-ret, frame = camera.read()
-database.log_access(name, method, score, status)
-
-# Member 3 receives
-# Display frame in GUI
-# Show access logs
-```
-
-### Member 2 → Member 3
-
-**Interface**: Recognition results
+**Interface**: Logging Data
 
 ```python
-# Member 2 provides
+# Member 2 returns result
 name, score = recognizer.predict(face_roi)
-users = recognizer.get_user_list()
 
-# Member 3 receives
-# Display name, score in GUI
-# Show trained users list
+# Member 1 logs to DB
+database.log_access(name, score, status)
 ```
 
 ### Member 3 → All
 
-**Orchestration**: Main workflow
+**Orchestration**: Main Application Flow
 
 ```python
-# Member 3 integrates
-1. Initialize camera (Member 1)
-2. Load recognizer (Member 2)
-3. Start recognition loop
-4. Display results in GUI
-5. Log access (Member 1)
+# Member 3 ties it all together in Gradio Loop
+def recognition_loop():
+    frame = camera.read()           # Mem 1
+    faces = detector.detect(frame)  # Mem 1
+    for face in faces:
+        name = recognizer.predict() # Mem 2
+    yield ui_update                 # Mem 3
 ```
 
 ---
 
 ## 📊 Workload Distribution
 
-| Member | Focus Area   | Lines of Code | Complexity | Time Estimate |
-| ------ | ------------ | ------------- | ---------- | ------------- |
-| **1**  | Backend Core | ~800 lines    | Medium     | 35%           |
-| **2**  | AI/ML        | ~900 lines    | High       | 35%           |
-| **3**  | Frontend     | ~700 lines    | Medium     | 30%           |
-
----
-
-## 🎯 Milestones
-
-### Phase 1: Core Development (Week 1-2)
-
-- **Member 1**: Camera + Detection modules
-- **Member 2**: LBPH recognizer
-- **Member 3**: Basic GUI structure
-
-### Phase 2: Advanced Features (Week 3)
-
-- **Member 1**: Database + Logging
-- **Member 2**: OpenFace recognizer
-- **Member 3**: GUI controls + integration
-
-### Phase 3: Testing & Documentation (Week 4)
-
-- **All**: Integration testing
-- **Member 3**: Documentation
-- **All**: Bug fixes & optimization
+| Member | Focus Area       | Technologies  | Complexity |
+| :----- | :--------------- | :------------ | :--------- |
+| **1**  | Core & Detection | OpenCV, YuNet | Medium     |
+| **2**  | AI Model         | SFace, ONNX   | High       |
+| **3**  | Frontend         | Gradio, Async | Medium     |
 
 ---
 
 ## 📋 Quick Reference
 
-| Member | Main Modules                         | Key Technologies               | Output              |
-| ------ | ------------------------------------ | ------------------------------ | ------------------- |
-| **1**  | camera, detector, database           | OpenCV, SQLite                 | Detection + Storage |
-| **2**  | recognizer_lbph, recognizer_openface | OpenCV, dlib, face_recognition | Recognition         |
-| **3**  | gui, main, config                    | Tkinter, Threading             | UI + Integration    |
+| Module           | Phụ Trách          | Trạng Thái   |
+| :--------------- | :----------------- | :----------- |
+| **Detector**     | YuNet (OpenCV Zoo) | ✅ Completed |
+| **Recognizer**   | SFace (OpenCV Zoo) | ✅ Completed |
+| **UI Framework** | Gradio (Web)       | ✅ Completed |
+| **Storage**      | Pickle / CSV       | ✅ Completed |
 
 ---
 
-## ✅ Completion Checklist
-
-### Member 1
-
-- [x] Camera management with context manager
-- [x] Haar Cascade detection
-- [x] DNN detection
-- [x] Database operations
-- [x] CSV logging
-
-### Member 2
-
-- [x] LBPH recognition
-- [x] OpenFace recognition
-- [x] Training scripts
-- [x] Threshold management
-- [x] Error handling for corrupted images
-
-### Member 3
-
-- [x] Tkinter GUI
-- [x] Method switching (LBPH ↔ OpenFace)
-- [x] Threshold slider
-- [x] Access logs viewer
-- [x] Documentation
-
----
-
-**Status**: ✅ **ALL TASKS COMPLETED**
-
-**Version**: 1.1.0  
-**Last Updated**: 2025-11-30
+**Version**: 2.0.0
+**Project Status**: Stable & Deployment Ready
