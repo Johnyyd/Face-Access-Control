@@ -269,6 +269,10 @@ class SFaceRecognizer:
                     known_embedding.astype(np.float32).reshape(1, -1),
                     cv2.FaceRecognizerSF_FR_COSINE,
                 )
+                if config.DEBUG:
+                    print(
+                        f"[DEBUG] SFace match: dist={distance}, const={cv2.FaceRecognizerSF_FR_COSINE}"
+                    )
                 distances.append(distance)
 
             # Find best match
