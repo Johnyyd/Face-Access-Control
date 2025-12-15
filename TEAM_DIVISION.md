@@ -36,7 +36,8 @@ modules/
 └── database.py         # Storage logic
 
 models/
-└── face_detection_yunet_2023mar.onnx
+├──yunet
+   └── face_detection_yunet_2023mar.onnx
 ```
 
 ### Dependencies
@@ -86,8 +87,9 @@ train_sface.py          # Training Script
 download_models.py      # Model Downloader
 
 models/
-├── face_recognition_sface_2021dec.onnx
-└── embeddings.pkl      # Trained Database
+├──sface
+    ├── face_recognition_sface_2021dec.onnx
+    └── embeddings.pkl      # Trained Database
 ```
 
 ### Dependencies
