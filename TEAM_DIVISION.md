@@ -16,8 +16,8 @@ Dựa trên hệ thống LBPH + OpenFace Recognition
 
 **Face Detection**:
 
-- Haar Cascade implementation
-- DNN detection implementation
+- SFace Regconize implementation
+- YuNet detection implementation
 - Switchable detection methods
 - Bounding box extraction
 
@@ -36,9 +36,11 @@ modules/
 └── database.py         # Storage & logging
 
 models/
-├── haarcascade_frontalface_default.xml
-├── deploy.prototxt
-└── res10_300x300_ssd_iter_140000.caffemodel
+├── sface
+│   └── face_recognition_sface_2021dec.onnx
+└── yunet
+    └── face_detection_yunet_2023mar.onnx
+
 
 logs/
 └── access_log.csv
@@ -63,19 +65,12 @@ logs/
 
 ### Trách nhiệm chính
 
-**LBPH Recognition**:
+**SFace Recognition**:
 
-- LBPH algorithm implementation
+- SFace algorithm implementation
 - Training từ dataset
 - Prediction với confidence score
 - Threshold management
-
-**OpenFace Recognition**:
-
-- OpenFace/dlib integration
-- 128-d embedding extraction
-- Euclidean distance calculation
-- Encoding storage
 
 **Training Pipeline**:
 
@@ -88,16 +83,15 @@ logs/
 
 ```
 modules/
-├── recognizer_lbph.py      # LBPH recognition
-└── recognizer_openface.py  # OpenFace recognition
+└── recognizer_sface.py  # OpenFace recognition
 
-train_lbph.py               # LBPH training script
-train_openface.py           # OpenFace training script
+train_sface.py               # SFace training script
 
 models/
-├── trainer.yml             # LBPH model
-├── mapping.json            # LBPH label mapping
-└── embeddings.pickle       # OpenFace encodings
+├── sface
+│   └── face_recognition_sface_2021dec.onnx
+└── yunet
+    └── face_detection_yunet_2023mar.onnx
 
 dataset/
 └── [username]/             # Training images
@@ -106,16 +100,14 @@ dataset/
 ### Dependencies
 
 - OpenCV (LBPH)
-- face_recognition (OpenFace)
 - dlib
 - NumPy (< 2.0)
 - Pickle
 
 ### Deliverables
 
-- [x] LBPH recognizer class
-- [x] OpenFace recognizer class
-- [x] Training scripts cho cả 2 methods
+- [x] SFace recognizer class
+- [x] Training scripts
 - [x] Threshold tuning support
 
 ---
@@ -126,7 +118,7 @@ dataset/
 
 **GUI Development**:
 
-- Tkinter interface
+- Gradio interface
 - Video display
 - Control panel (method selection, threshold slider)
 - Access logs viewer
@@ -149,7 +141,7 @@ dataset/
 ```
 gui/
 ├── __init__.py
-└── main_window.py          # Main GUI
+└── main_window_gradio.py          # Main GUI
 
 main.py                     # Entry point
 config.py                   # Configuration
@@ -162,13 +154,13 @@ requirements.txt           # Dependencies
 
 ### Dependencies
 
-- Tkinter (GUI)
+- Gradio (GUI)
 - Pillow (Image display)
 - Threading
 
 ### Deliverables
 
-- [x] Tkinter GUI với dual method support
+- [x] Gradio GUI với dual method support
 - [x] Real-time video display
 - [x] Control panel (method switching, threshold)
 - [x] Main application integration
@@ -250,13 +242,13 @@ users = recognizer.get_user_list()
 ### Phase 1: Core Development (Week 1-2)
 
 - **Member 1**: Camera + Detection modules
-- **Member 2**: LBPH recognizer
+- **Member 2**: SFace recognizer
 - **Member 3**: Basic GUI structure
 
 ### Phase 2: Advanced Features (Week 3)
 
 - **Member 1**: Database + Logging
-- **Member 2**: OpenFace recognizer
+- **Member 2**: SFace recognizer
 - **Member 3**: GUI controls + integration
 
 ### Phase 3: Testing & Documentation (Week 4)
@@ -271,8 +263,8 @@ users = recognizer.get_user_list()
 
 | Member | Main Modules                         | Key Technologies               | Output              |
 | ------ | ------------------------------------ | ------------------------------ | ------------------- |
-| **1**  | camera, detector, database           | OpenCV, SQLite                 | Detection + Storage |
-| **2**  | recognizer_lbph, recognizer_openface | OpenCV, dlib, face_recognition | Recognition         |
+| **1**  | camera, detector, database           | OpenCV, csv                    | Detection + Storage |
+| **2**  | recognizer_sface                     | OpenCV, dlib                   | Recognition         |
 | **3**  | gui, main, config                    | Tkinter, Threading             | UI + Integration    |
 
 ---
@@ -282,23 +274,20 @@ users = recognizer.get_user_list()
 ### Member 1
 
 - [x] Camera management with context manager
-- [x] Haar Cascade detection
-- [x] DNN detection
+- [x] YuNet Cascade detection
 - [x] Database operations
 - [x] CSV logging
 
 ### Member 2
 
-- [x] LBPH recognition
-- [x] OpenFace recognition
+- [x] SFace recognition
 - [x] Training scripts
 - [x] Threshold management
 - [x] Error handling for corrupted images
 
 ### Member 3
 
-- [x] Tkinter GUI
-- [x] Method switching (LBPH ↔ OpenFace)
+- [x] Gradio GUI
 - [x] Threshold slider
 - [x] Access logs viewer
 - [x] Documentation
