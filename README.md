@@ -46,7 +46,7 @@ Chỉnh `config.py`:
 ```python
 LBPH_CONFIDENCE_THRESHOLD = 90.0
 OPENFACE_DISTANCE_THRESHOLD = 0.6
-DEFAULT_RECOGNITION_METHOD = 'lbph', 'sface'  # hoặc 'openface'
+DEFAULT_RECOGNITION_METHOD = 'lbph', # 'sface' hoặc 'openface'
 ```
 
 ## 🐛 Troubleshooting
