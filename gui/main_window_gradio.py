@@ -366,6 +366,11 @@ class GradioMainWindow:
         if os.path.exists(user_dir):
             try:
                 shutil.rmtree(user_dir)
+
+                # Update SFace embeddings
+                if SFACE_RECOGNITION_AVAILABLE and self.recognizer_sface:
+                    self.recognizer_sface.delete_user(name)
+
                 self.reload_recognition = True  # Also reload logic
                 return f"Success: User '{name}' deleted."
             except Exception as e:

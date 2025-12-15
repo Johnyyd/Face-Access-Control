@@ -308,6 +308,48 @@ class SFaceRecognizer:
         """Check if embeddings are loaded"""
         return self.is_trained
 
+    def delete_user(self, name: str) -> bool:
+        """
+        Xóa user khỏi bộ nhớ và database
+
+        Args:
+            name: Tên user cần xóa
+
+        Returns:
+            bool: True nếu xóa thành công
+        """
+        try:
+            if not self.known_names:
+                return False
+
+            # Filter out indices needed to keep
+            indices_to_keep = [i for i, n in enumerate(self.known_names) if n != name]
+
+            if len(indices_to_keep) == len(self.known_names):
+                print(f"[SFaceRecognizer] User '{name}' not found in embeddings")
+                return False
+
+            # Update lists
+            new_names = [self.known_names[i] for i in indices_to_keep]
+            new_embeddings = [self.known_embeddings[i] for i in indices_to_keep]
+
+            self.known_names = new_names
+            self.known_embeddings = new_embeddings
+
+            # Save to disk
+            if self.database.save_embeddings(new_names, new_embeddings):
+                print(f"[SFaceRecognizer] User '{name}' deleted from embeddings")
+                return True
+            else:
+                print(
+                    f"[SFaceRecognizer] ERROR: Failed to save embeddings after deletion"
+                )
+                return False
+
+        except Exception as e:
+            print(f"[SFaceRecognizer] ERROR deleting user: {e}")
+            return False
+
 
 # ==================== TESTING ====================
 
