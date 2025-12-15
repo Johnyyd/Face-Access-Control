@@ -30,173 +30,6 @@ class Database:
         if config.DEBUG:
             print("[Database] Initialized")
 
-    # ==================== LBPH MODEL ====================
-
-    def save_lbph_model(
-        self,
-        recognizer: cv2.face.LBPHFaceRecognizer,
-        label_mapping: Dict[int, str],
-        model_path: str = None,
-        mapping_path: str = None,
-    ) -> bool:
-        """
-        Lưu LBPH model và label mapping
-
-        Args:
-            recognizer: LBPH recognizer đã train
-            label_mapping: Dictionary {label_id: name}
-            model_path: Đường dẫn lưu model (mặc định từ config)
-            mapping_path: Đường dẫn lưu mapping (mặc định từ config)
-
-        Returns:
-            bool: True nếu lưu thành công
-        """
-        try:
-            model_path = model_path or config.LBPH_MODEL_PATH
-            mapping_path = mapping_path or config.LBPH_MAPPING_PATH
-
-            # Lưu LBPH model (YAML format)
-            recognizer.save(model_path)
-
-            # Lưu label mapping (JSON format)
-            with open(mapping_path, "w", encoding="utf-8") as f:
-                json.dump(label_mapping, f, indent=4, ensure_ascii=False)
-
-            if config.DEBUG:
-                print(f"[Database] LBPH model saved to: {model_path}")
-                print(f"[Database] Label mapping saved to: {mapping_path}")
-                print(f"[Database] Total users: {len(label_mapping)}")
-
-            return True
-
-        except Exception as e:
-            print(f"[Database] ERROR saving LBPH model: {e}")
-            return False
-
-    def load_lbph_model(
-        self, model_path: str = None, mapping_path: str = None
-    ) -> Tuple[Optional[cv2.face.LBPHFaceRecognizer], Optional[Dict[int, str]]]:
-        """
-        Load LBPH model và label mapping
-
-        Args:
-            model_path: Đường dẫn model (mặc định từ config)
-            mapping_path: Đường dẫn mapping (mặc định từ config)
-
-        Returns:
-            Tuple[recognizer, label_mapping]: (None, None) nếu thất bại
-        """
-        try:
-            model_path = model_path or config.LBPH_MODEL_PATH
-            mapping_path = mapping_path or config.LBPH_MAPPING_PATH
-
-            # Kiểm tra file tồn tại
-            if not os.path.exists(model_path):
-                print(f"[Database] ERROR: LBPH model not found: {model_path}")
-                return None, None
-
-            if not os.path.exists(mapping_path):
-                print(f"[Database] ERROR: Label mapping not found: {mapping_path}")
-                return None, None
-
-            # Load LBPH model
-            recognizer = cv2.face.LBPHFaceRecognizer_create()
-            recognizer.read(model_path)
-
-            # Load label mapping
-            with open(mapping_path, "r", encoding="utf-8") as f:
-                label_mapping_str = json.load(f)
-
-            # Convert keys từ string sang int
-            label_mapping = {int(k): v for k, v in label_mapping_str.items()}
-
-            if config.DEBUG:
-                print(f"[Database] LBPH model loaded from: {model_path}")
-                print(f"[Database] Label mapping loaded from: {mapping_path}")
-                print(f"[Database] Total users: {len(label_mapping)}")
-
-            return recognizer, label_mapping
-
-        except Exception as e:
-            print(f"[Database] ERROR loading LBPH model: {e}")
-            return None, None
-
-    # ==================== OPENFACE EMBEDDINGS ====================
-
-    def save_openface_embeddings(
-        self, names: List[str], encodings: List[np.ndarray], embeddings_path: str = None
-    ) -> bool:
-        """
-        Lưu OpenFace encodings (face embeddings)
-
-        Args:
-            names: List tên người (có thể trùng lặp)
-            encodings: List face encodings (128-d vectors)
-            embeddings_path: Đường dẫn lưu embeddings (mặc định từ config)
-
-        Returns:
-            bool: True nếu lưu thành công
-        """
-        try:
-            embeddings_path = embeddings_path or config.OPENFACE_EMBEDDINGS_PATH
-
-            # Lưu dưới dạng pickle
-            data = {"names": names, "encodings": encodings}
-
-            with open(embeddings_path, "wb") as f:
-                pickle.dump(data, f)
-
-            if config.DEBUG:
-                print(f"[Database] OpenFace embeddings saved to: {embeddings_path}")
-                print(f"[Database] Total encodings: {len(encodings)}")
-                print(f"[Database] Unique users: {len(set(names))}")
-
-            return True
-
-        except Exception as e:
-            print(f"[Database] ERROR saving OpenFace embeddings: {e}")
-            return False
-
-    def load_openface_embeddings(
-        self, embeddings_path: str = None
-    ) -> Tuple[Optional[List[str]], Optional[List[np.ndarray]]]:
-        """
-        Load OpenFace encodings từ file
-
-        Args:
-            embeddings_path: Đường dẫn embeddings file (mặc định từ config)
-
-        Returns:
-            Tuple[names, encodings]: (None, None) nếu thất bại
-        """
-        try:
-            embeddings_path = embeddings_path or config.OPENFACE_EMBEDDINGS_PATH
-
-            if not os.path.exists(embeddings_path):
-                print(
-                    f"[Database] ERROR: OpenFace embeddings not found: {embeddings_path}"
-                )
-                return None, None
-
-            # Load từ pickle
-            with open(embeddings_path, "rb") as f:
-                data = pickle.load(f)
-
-            names = data["names"]
-            encodings = data["encodings"]
-
-            if config.DEBUG:
-                print(f"[Database] OpenFace embeddings loaded from: {embeddings_path}")
-                print(f"[Database] Total encodings: {len(encodings)}")
-                print(f"[Database] Unique users: {len(set(names))}")
-
-            return names, encodings
-
-        except Exception as e:
-            print(f"[Database] ERROR loading OpenFace embeddings: {e}")
-            return None, None
-
-
     # ==================== ACCESS LOGS ====================
 
     def log_access(
@@ -317,6 +150,61 @@ class Database:
             print(f"[Database] ERROR clearing access logs: {e}")
             return False
 
+            return False
+
+    # ==================== EMBEDDINGS MANAGEMENT ====================
+
+    def save_embeddings(self, names: List[str], embeddings: List[np.ndarray]) -> bool:
+        """
+        Lưu embeddings vào file
+
+        Args:
+            names: Danh sách tên
+            embeddings: Danh sách embeddings
+
+        Returns:
+            bool: True nếu lưu thành công
+        """
+        try:
+            with open(config.SFACE_EMBEDDINGS_PATH, "wb") as f:
+                pickle.dump((names, embeddings), f)
+
+            if config.DEBUG:
+                print(f"[Database] Embeddings saved to: {config.SFACE_EMBEDDINGS_PATH}")
+
+            return True
+
+        except Exception as e:
+            print(f"[Database] ERROR saving embeddings: {e}")
+            return False
+
+    def load_embeddings(self) -> Tuple[List[str], List[np.ndarray]]:
+        """
+        Đọc embeddings từ file
+
+        Returns:
+            Tuple[List[str], List[np.ndarray]]: (names, embeddings)
+        """
+        try:
+            if not os.path.exists(config.SFACE_EMBEDDINGS_PATH):
+                if config.DEBUG:
+                    print(
+                        f"[Database] Embeddings file not found: {config.SFACE_EMBEDDINGS_PATH}"
+                    )
+                return [], []
+
+            with open(config.SFACE_EMBEDDINGS_PATH, "rb") as f:
+                names, embeddings = pickle.load(f)
+
+            if config.DEBUG:
+                print(f"[Database] Embeddings loaded: {len(names)} users")
+
+            return names, embeddings
+
+        except Exception as e:
+            print(f"[Database] ERROR loading embeddings: {e}")
+            return [], []
+
     # ==================== UTILITY FUNCTIONS ====================
 
     def get_user_list(self, method: str = "lbph") -> List[str]:
@@ -330,19 +218,10 @@ class Database:
             List[str]: Danh sách tên users
         """
         try:
-            if method == "lbph":
-                _, label_mapping = self.load_lbph_model()
-                if label_mapping:
-                    return list(label_mapping.values())
-            elif method == "openface":
-                names, _ = self.load_openface_embeddings()
+            if method == "sface":
+                names, _ = self.load_embeddings()  # SFace uses same format
                 if names:
                     return list(set(names))  # Unique names
-            elif method == "sface":
-                names, _ = self.load_openface_embeddings()  # SFace uses same format
-                if names:
-                    return list(set(names))  # Unique names
-           
 
             return []
 
@@ -350,26 +229,18 @@ class Database:
             print(f"[Database] ERROR getting user list: {e}")
             return []
 
-    def model_exists(self, method: str = "lbph") -> bool:
+    def model_exists(self, method: str = "sface") -> bool:
         """
         Kiểm tra model đã tồn tại chưa
 
         Args:
-            method: 'lbph', 'openface', 'sface'
+            method: 'sface'
 
         Returns:
             bool: True nếu model tồn tại
         """
-        if method == "lbph":
-            return os.path.exists(config.LBPH_MODEL_PATH) and os.path.exists(
-                config.LBPH_MAPPING_PATH
-            )
-        elif method == "openface":
-            return os.path.exists(config.OPENFACE_EMBEDDINGS_PATH)
-        elif method == "sface":
-            return os.path.exists(
-                config.SFACE_MODEL_PATH
-            )  # SFace uses same format
+        if method == "sface":
+            return os.path.exists(config.SFACE_EMBEDDINGS_PATH)
 
         return False
 
@@ -383,39 +254,19 @@ if __name__ == "__main__":
     db = Database()
 
     # Test 1: LBPH model (mock data)
-    print("\n1. Testing LBPH model save/load...")
-    recognizer = cv2.face.LBPHFaceRecognizer_create()
-    label_mapping = {0: "Alice", 1: "Bob", 2: "Charlie"}
+    print("\n1. Testing SFace model...")
 
-    if db.save_lbph_model(recognizer, label_mapping):
-        print("✓ LBPH model saved")
-
-        loaded_recognizer, loaded_mapping = db.load_lbph_model()
-        if loaded_recognizer and loaded_mapping:
-            print(f"✓ LBPH model loaded: {loaded_mapping}")
-
-    # Test 2
-
-    # Test 3
-
-    # Test 4: Access logs
+    # Test 2: Access logs
     print("\n4. Testing access logs...")
-    db.log_access("Alice", "LBPH", 35.5, "GRANTED")
-    db.log_access("Unknown", "OpenFace", 0.85, "DENIED")
-    db.log_access("Bob", "LBPH", 42.1, "GRANTED")
+    db.log_access("Alice", "SFace", 35.5, "GRANTED")
+    db.log_access("Unknown", "SFace", 0.85, "DENIED")
+    db.log_access("Bob", "SFace", 42.1, "GRANTED")
 
     logs = db.read_access_logs(limit=10)
     print(f"✓ Access logs: {len(logs)} entries")
     for log in logs:
         print(f"  {log}")
 
-    # Test 5: Utility functions
-    print("\n5. Testing utility functions...")
-    users_lbph = db.get_user_list("lbph")
-    print(f"✓ LBPH users: {users_lbph}")
-
-    
-
-    print(f"✓ LBPH model exists: {db.model_exists('lbph')}")
+    print(f"✓ SFace model exists: {db.model_exists('sface')}")
     print("=" * 50)
     print("Database test completed")

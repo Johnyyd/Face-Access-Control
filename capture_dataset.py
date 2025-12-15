@@ -8,7 +8,7 @@ import os
 import sys
 import config
 from modules.camera import CameraManager
-from modules.detector import FaceDetector
+from modules.detector_yunet import YuNetDetector
 
 
 def capture_images(name: str, num_images: int = 20, auto_detect: bool = True):
@@ -47,7 +47,7 @@ def capture_images(name: str, num_images: int = 20, auto_detect: bool = True):
     
     detector = None
     if auto_detect:
-        detector = FaceDetector(method='haar')  # Haar nhanh hơn cho capture
+        detector = YuNetDetector(method='yunet')  # Haar nhanh hơn cho capture
     
     count = 0
     count_images = 0

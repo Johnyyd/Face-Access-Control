@@ -6,9 +6,6 @@ Usage:
     python main.py
 """
 
-import tkinter as tk
-from gui.main_window_tkinter import TKinterMainWindow
-
 from gui.main_window_gradio import GradioMainWindow
 import config
 import sys
@@ -34,12 +31,11 @@ def check_requirements():
 
     db = Database()
 
-    has_lbph = db.model_exists("lbph")
-    has_openface = db.model_exists("openface")
+    has_sface = db.model_exists("sface")
 
-    if not has_lbph and not has_openface:
+    if not has_sface:
         errors.append(
-            "No trained models found! Please run train_lbph.py or train_openface.py first."
+            "No trained models found! Please run train_sface.py first."
         )
 
     return errors
@@ -50,9 +46,9 @@ def print_banner():
     banner = """
     ==========================================================
                                                           
-         FACE ACCESS CONTROL SYSTEM v1.0                  
+        FACE ACCESS CONTROL SYSTEM v1.0                  
                                                           
-      Triple Recognition: LBPH + OpenFace + SFace        
+        Recognition: SFace        
                                                           
     ==========================================================
     """
@@ -62,7 +58,9 @@ def print_banner():
 def print_system_info():
     """In thông tin hệ thống"""
     from modules.database import Database
-    from modules.recognizer_openface import FACE_RECOGNITION_AVAILABLE
+    from modules.recognizer_sface import SFaceRecognizer
+
+
 
     db = Database()
 
@@ -77,28 +75,20 @@ def print_system_info():
 
     print(f"\nRecognition Methods:")
     print(
-        f"  - LBPH: {'[OK] Available' if db.model_exists('lbph') else '[X] Not trained'}"
-    )
-    print(
-        f"  - OpenFace: {'[OK] Available' if db.model_exists('openface') and FACE_RECOGNITION_AVAILABLE else '[X] Not available'}"
+        f"  - SFace: {'[OK] Available' if db.model_exists('sface') else '[X] Not trained'}"
     )
 
     print(f"\nDefault Settings:")
     print(f"  - Recognition Method: {config.DEFAULT_RECOGNITION_METHOD.upper()}")
     print(f"  - Detection Method: {config.DEFAULT_DETECTION_METHOD.upper()}")
-    print(f"  - LBPH Threshold: {config.LBPH_CONFIDENCE_THRESHOLD}")
-    print(f"  - OpenFace Threshold: 0.6")
+    print(f"  - SFace Distance Threshold: {config.SFACE_DISTANCE_THRESHOLD}")
 
     # Hiển thị danh sách users
-    if db.model_exists("lbph"):
-        users_lbph = db.get_user_list("lbph")
-        print(f"\nLBPH Registered Users ({len(users_lbph)}):")
+    if db.model_exists("sface"):
+        users_lbph = db.get_user_list("sface")
+        print(f"\nSFace Registered Users ({len(users_lbph)}):")
         print(f"  {', '.join(users_lbph)}")
 
-    if db.model_exists("openface") and FACE_RECOGNITION_AVAILABLE:
-        users_openface = db.get_user_list("openface")
-        print(f"\nOpenFace Registered Users ({len(users_openface)}):")
-        print(f"  {', '.join(users_openface)}")
 
     print("=" * 60)
 
@@ -140,28 +130,11 @@ def main():
     print("STARTING APPLICATION...")
     print("=" * 60)
     print("\nLaunching GUI...")
-
     try:
-        flag = True
-        while flag:
-            choice = int(input("Nhập lựa chọn: "))
-            if choice == 1:
-                app1 = GradioMainWindow()
-                app1.demo.launch(share=True)
-                print("[OK] GUI launched successfully")
-                print("\nApplication is running. Close the window to exit.")
-            if choice == 2:
-                root = tk.Tk()
-                app2 = TKinterMainWindow(root)
-                root.mainloop()
-                print("[OK] GUI launched successfully")
-                print("\nApplication is running. Close the window to exit.")
-                print("\n" + "=" * 60)
-                print("APPLICATION CLOSED")
-                print("=" * 60)
-            if choice == 3:
-                flag = False
-
+        app = GradioMainWindow()
+        app.demo.launch(share=True)
+        print("[OK] GUI launched successfully")
+        print("\nApplication is running. Close the window to exit.")
 
     except Exception as e:
         print(f"\n[X] ERROR: Failed to start application: {e}")

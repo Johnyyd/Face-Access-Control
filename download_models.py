@@ -41,31 +41,8 @@ def main():
     
     models = []
     
-    # 1. Haar Cascade (Required)
-    models.append({
-        'name': 'Haar Cascade',
-        'url': 'https://raw.githubusercontent.com/opencv/opencv/master/data/haarcascades/haarcascade_frontalface_default.xml',
-        'output': 'models/haarcascade_frontalface_default.xml',
-        'required': True
-    })
-    
-    # 2. DNN Prototxt (Optional)
-    models.append({
-        'name': 'DNN Prototxt',
-        'url': 'https://raw.githubusercontent.com/opencv/opencv/master/samples/dnn/face_detector/deploy.prototxt',
-        'output': 'models/deploy.prototxt',
-        'required': False
-    })
-    
-    # 3. DNN Caffemodel (Optional)
-    models.append({
-        'name': 'DNN Caffemodel',
-        'url': 'https://github.com/opencv/opencv_3rdparty/raw/dnn_samples_face_detector_20170830/res10_300x300_ssd_iter_140000.caffemodel',
-        'output': 'models/res10_300x300_ssd_iter_140000.caffemodel',
-        'required': False
-    })
-    
-    # 4. YuNet (Face Detection - Recommended)
+   
+    # 1. YuNet (Face Detection - Recommended)
     models.append({
         'name': 'YuNet Face Detector',
         'url': 'https://github.com/opencv/opencv_zoo/raw/main/models/face_detection_yunet/face_detection_yunet_2023mar.onnx',
@@ -73,7 +50,7 @@ def main():
         'required': False
     })
     
-    # 5. SFace (Face Recognition - Recommended)
+    # 2. SFace (Face Recognition - Recommended)
     models.append({
         'name': 'SFace Face Recognizer',
         'url': 'https://github.com/opencv/opencv_zoo/raw/main/models/face_recognition_sface/face_recognition_sface_2021dec.onnx',
@@ -133,11 +110,8 @@ def main():
     print("=" * 60)
     
     all_models = {
-        'Haar Cascade': 'models/haarcascade_frontalface_default.xml',
-        'DNN Prototxt': 'models/deploy.prototxt',
-        'DNN Caffemodel': 'models/res10_300x300_ssd_iter_140000.caffemodel',
-        'YuNet Detector': 'models/face_detection_yunet_2023mar.onnx',
-        'SFace Recognizer': 'models/face_recognition_sface_2021dec.onnx'
+        'YuNet Detector': 'models/yunet/face_detection_yunet_2023mar.onnx',
+        'SFace Recognizer': 'models/sface/face_recognition_sface_2021dec.onnx'
     }
     
     for name, path in all_models.items():

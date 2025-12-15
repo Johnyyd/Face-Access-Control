@@ -4,9 +4,6 @@ Export các class chính để dễ dàng import
 """
 
 from .camera import CameraManager
-from .detector import FaceDetector
-from .recognizer_lbph import LBPHRecognizer
-from .recognizer_openface import OpenFaceRecognizer
 from .recognizer_sface import SFaceRecognizer
 from .detector_yunet import YuNetDetector
 from .database import Database
