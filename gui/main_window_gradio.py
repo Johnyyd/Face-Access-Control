@@ -51,7 +51,7 @@ class GradioMainWindow:
         self.current_detection = config.DEFAULT_DETECTION_METHOD
 
         # Initialize separate thresholds
-        self.threshold_sface = 0.4
+        self.threshold_sface = 0.6
 
         # Set initial value based on default method
         if self.current_method == "sface":
@@ -139,7 +139,7 @@ class GradioMainWindow:
                         maximum=2.0,
                         value=self.threshold_sface,
                         step=0.05,
-                        label="Cosine Distance (Lower is Stricter: ~0.4 Default)",
+                        label="Cosine Similarity (Higher is Stricter: ~0.6 Default)",
                     )
 
                     # Start/Stop Buttons
@@ -586,7 +586,7 @@ class GradioMainWindow:
                     maximum=2.0,
                     step=0.05,
                     value=self.threshold_sface,
-                    label="Cosine Distance (Lower is Stricter: ~0.4 Default)",
+                    label="Cosine Similarity (Higher is Stricter: ~0.6 Default)",
                 ),
                 status_msg,
             )

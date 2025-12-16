@@ -43,7 +43,7 @@ SFACE_EMBEDDINGS_PATH = os.path.join(MODELS_DIR, "sface/embeddings.pkl")
 
 # SFace Parameters
 SFACE_EMBEDDING_SIZE = 512  # SFace tạo vector 512 chiều
-SFACE_DISTANCE_THRESHOLD = 0.4  # Cosine distance threshold (lower = stricter)
+SFACE_THRESHOLD = 0.6  # Cosine Similarity threshold (higher is stricter, max 1.0)
 
 # ==================== CẤU HÌNH RECOGNITION CHUNG ====================
 
@@ -158,8 +158,8 @@ def validate_config():
     if DEFAULT_RECOGNITION_METHOD not in ["sface"]:
         errors.append("DEFAULT_RECOGNITION_METHOD must be 'sface'")
 
-    if not (0 < SFACE_DISTANCE_THRESHOLD < 2):
-        errors.append("SFACE_DISTANCE_THRESHOLD should be between 0 and 2")
+    if not (0 < SFACE_THRESHOLD < 1.0):
+        errors.append("SFACE_THRESHOLD should be between 0 and 1")
 
     if errors:
         print("Configuration errors:")
@@ -183,7 +183,7 @@ if __name__ == "__main__":
     print(f"Default Detection Method: {DEFAULT_DETECTION_METHOD}")
     print(f"Default Recognition Method: {DEFAULT_RECOGNITION_METHOD}")
 
-    print(f"SFace Threshold: {SFACE_DISTANCE_THRESHOLD}")
+    print(f"SFace Threshold: {SFACE_THRESHOLD}")
     print("=" * 50)
 
     # Tạo thư mục

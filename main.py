@@ -34,9 +34,7 @@ def check_requirements():
     has_sface = db.model_exists("sface")
 
     if not has_sface:
-        errors.append(
-            "No trained models found! Please run train_sface.py first."
-        )
+        errors.append("No trained models found! Please run train_sface.py first.")
 
     return errors
 
@@ -60,8 +58,6 @@ def print_system_info():
     from modules.database import Database
     from modules.recognizer_sface import SFaceRecognizer
 
-
-
     db = Database()
 
     print("\n" + "=" * 60)
@@ -81,14 +77,13 @@ def print_system_info():
     print(f"\nDefault Settings:")
     print(f"  - Recognition Method: {config.DEFAULT_RECOGNITION_METHOD.upper()}")
     print(f"  - Detection Method: {config.DEFAULT_DETECTION_METHOD.upper()}")
-    print(f"  - SFace Distance Threshold: {config.SFACE_DISTANCE_THRESHOLD}")
+    print(f"  - SFace Threshold: {config.SFACE_THRESHOLD}")
 
     # Hiển thị danh sách users
     if db.model_exists("sface"):
         users_lbph = db.get_user_list("sface")
         print(f"\nSFace Registered Users ({len(users_lbph)}):")
         print(f"  {', '.join(users_lbph)}")
-
 
     print("=" * 60)
 

@@ -1,1 +1,0 @@
-# OpenFace training script

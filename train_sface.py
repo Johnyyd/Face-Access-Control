@@ -26,7 +26,8 @@ def check_dataset(dataset_dir):
         return None
 
     users = [
-        d for d in os.listdir(dataset_dir)
+        d
+        for d in os.listdir(dataset_dir)
         if os.path.isdir(os.path.join(dataset_dir, d)) and not d.startswith(".")
     ]
 
@@ -46,10 +47,13 @@ def show_dataset_statistics(dataset_dir, users):
     print("-" * 60)
     for user in users:
         user_path = os.path.join(dataset_dir, user)
-        num_images = len([
-            f for f in os.listdir(user_path)
-            if f.lower().endswith((".jpg", ".jpeg", ".png"))
-        ])
+        num_images = len(
+            [
+                f
+                for f in os.listdir(user_path)
+                if f.lower().endswith((".jpg", ".jpeg", ".png"))
+            ]
+        )
         status = "[OK]" if num_images >= config.MIN_IMAGES_PER_PERSON else "[X]"
         print(f"  {status} {user}: {num_images} images")
     print("-" * 60)
@@ -60,8 +64,8 @@ def show_configuration():
     print("\nSFace Configuration:")
     print(f"  - Model: OpenCV SFace ONNX")
     print(f"  - Embedding size: 512-d vector")
-    print(f"  - Distance metric: Cosine similarity")
-    print(f"  - Distance threshold: 0.4 (default)")
+    print(f"  - Distance metric: Cosine Similarity (Higher is better)")
+    print(f"  - Threshold: 0.6 (default)")
 
 
 def train_model(dataset_dir):
