@@ -8,6 +8,10 @@ import sys
 import urllib.request
 
 
+# =========================
+# Core Download Utilities
+# =========================
+
 def download_file(url, output_path, description):
     """Download file với progress bar"""
     print(f"\nDownloading {description}...")
@@ -16,7 +20,10 @@ def download_file(url, output_path, description):
 
     def reporthook(count, block_size, total_size):
         """Progress callback"""
+        if total_size <= 0:
+            return
         percent = int(count * block_size * 100 / total_size)
+        percent = min(percent, 100)
         sys.stdout.write(f"\rProgress: {percent}% ")
         sys.stdout.flush()
 
@@ -28,6 +35,10 @@ def download_file(url, output_path, description):
         print(f"\n✗ Error downloading: {e}")
         return False
 
+
+# =========================
+# Display & Reporting
+# =========================
 
 def print_models_status(models):
     """In trạng thái models"""
@@ -59,12 +70,16 @@ def check_all_models():
     }
 
     for name, path in all_models.items():
-        if os.path.exists(path):
-            print(f"✓ {name} - {path}")
-        else:
-            print(f"✗ {name} - {path} (MISSING)")
+        status = "✓" if os.path.exists(path) else "✗"
+        missing_note = "" if status == "✓" else " (MISSING)"
+        print(f"{status} {name} - {path}{missing_note}")
+
     print("=" * 60)
 
+
+# =========================
+# Main Orchestration
+# =========================
 
 def main():
     """Main download function"""
@@ -95,8 +110,8 @@ def main():
     print("See MODELS_DOWNLOAD.md for instructions")
     print("=" * 60)
 
-    response = input("\nDownload missing models? (y/n): ")
-    if response.lower() != 'y':
+    response = input("\nDownload missing models? (y/n): ").strip().lower()
+    if response != 'y':
         print("Download cancelled")
         return
 
@@ -104,7 +119,8 @@ def main():
     print("DOWNLOADING MODELS...")
     print("=" * 60)
 
-    success_count, fail_count = 0, 0
+    success_count = 0
+    fail_count = 0
 
     for model in models:
         if os.path.exists(model['output']):
@@ -112,7 +128,13 @@ def main():
             success_count += 1
             continue
 
-        if download_file(model['url'], model['output'], model['name']):
+        success = download_file(
+            model['url'],
+            model['output'],
+            model['name']
+        )
+
+        if success:
             success_count += 1
         else:
             fail_count += 1
