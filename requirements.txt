@@ -6,8 +6,8 @@ opencv-python>=4.8.0
 numpy<2.0  # CRITICAL: Must be < 2.0 for general cv2 compatibility and stability
 
 # GUI
-gradio>=4.22.0
-
+gradio==4.44.0
+pydantic==2.10.6
 # Image Processing
 Pillow>=10.0.0
 
