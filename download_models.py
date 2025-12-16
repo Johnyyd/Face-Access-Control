@@ -93,13 +93,13 @@ def main():
         {
             'name': 'YuNet Face Detector',
             'url': 'https://github.com/opencv/opencv_zoo/raw/main/models/face_detection_yunet/face_detection_yunet_2023mar.onnx',
-            'output': 'models/face_detection_yunet_2023mar.onnx',
+            'output': 'models/yunet/face_detection_yunet_2023mar.onnx',
             'required': False
         },
         {
             'name': 'SFace Face Recognizer',
             'url': 'https://github.com/opencv/opencv_zoo/raw/main/models/face_recognition_sface/face_recognition_sface_2021dec.onnx',
-            'output': 'models/face_recognition_sface_2021dec.onnx',
+            'output': 'models/sface/face_recognition_sface_2021dec.onnx',
             'required': False
         }
     ]

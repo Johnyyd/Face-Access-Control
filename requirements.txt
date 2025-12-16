@@ -3,26 +3,12 @@
 
 # Core Computer Vision
 opencv-python>=4.8.0
-numpy<2.0  # CRITICAL: Must be < 2.0 for dlib compatibility
+numpy<2.0  # CRITICAL: Must be < 2.0 for general cv2 compatibility and stability
 
-# Face Recognition (OpenFace)
-face-recognition>=1.2.3
-dlib>=19.24.1
+# GUI
+gradio>=4.22.0
 
 # Image Processing
 Pillow>=10.0.0
 
-# GUI (built-in with Python)
-gradio>=4.22.0
-
-# Data Handling
-scipy>=1.11.0  # Required by face_recognition
-
-# Optional: Performance
-cmake>=3.25.0  # Only needed if building dlib from source
-# wheel>=0.40.0  # For pre-built packages
-
-# Development Tools (optional)
-# pytest>=7.4.0
-# black>=23.0.0
-# flake8>=6.0.0
+# Note: dlib and face_recognition have been removed as we now use OpenCV SFace/YuNet.
