@@ -51,7 +51,7 @@ class GradioMainWindow:
         self.current_detection = config.DEFAULT_DETECTION_METHOD
 
         # Initialize separate thresholds
-        self.threshold_sface = 0.6
+        self.threshold_sface = 0.75
 
         # Set initial value based on default method
         if self.current_method == "sface":
@@ -136,10 +136,10 @@ class GradioMainWindow:
                     # Initial Config based on Default Method (LBPH)
                     self.threshold_slider = gr.Slider(
                         minimum=0.1,
-                        maximum=2.0,
+                        maximum=1.0,
                         value=self.threshold_sface,
                         step=0.05,
-                        label="Cosine Similarity (Higher is Stricter: ~0.6 Default)",
+                        label="Cosine Similarity (Higher is Stricter: ~0.75 Default)",
                     )
 
                     # Start/Stop Buttons
