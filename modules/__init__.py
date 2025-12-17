@@ -11,8 +11,6 @@ from .database import Database
 __all__ = [
     'CameraManager',
     'FaceDetector',
-    'LBPHRecognizer',
-    'OpenFaceRecognizer',
     'SFaceRecognizer',
     'YuNetDetector',
     'Database'
