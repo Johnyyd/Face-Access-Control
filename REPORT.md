@@ -72,17 +72,17 @@ graph TD
     User[Người Dùng] -->|Camera| Stream[Luồng Video]
 
     subgraph "Khối Xử Lý Trung Tâm"
-        Stream --> Detect[Phát hiện mặt (YuNet)]
-        Detect -->|Ảnh mặt đã cắt| Recog[Trích xuất đặc trưng (SFace)]
-        Recog -->|Vector 512 chiều| Match[So khớp Cosine]
+        Stream --> Detect["Phát hiện mặt (YuNet)"]
+        Detect -->|"Ảnh mặt đã cắt"| Recog["Trích xuất đặc trưng (SFace)"]
+        Recog -->|"Vector 512 chiều"| Match["So khớp Cosine"]
     end
 
     subgraph "Cơ Sở Dữ Liệu"
-        Encodings[(File Embeddings.pkl)] --> Match
+        Encodings[("File Embeddings.pkl")] --> Match
     end
 
-    Match -->|Kết quả > 0.75| Action[Ghi Log & Mở khóa]
-    Match -->|Kết quả < 0.75| Unknown[Cảnh báo Người lạ]
+    Match -->|"Kết quả > 0.75"| Action["Ghi Log & Mở khóa"]
+    Match -->|"Kết quả < 0.75"| Unknown["Cảnh báo Người lạ"]
 ```
 
 ### 3.2. Các Lưu Đồ Thuật Toán (Flowcharts)
