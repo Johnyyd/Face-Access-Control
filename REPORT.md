@@ -33,11 +33,9 @@ Dự án hướng tới việc xây dựng một hệ thống hoàn chỉnh vớ
 
 2. **Phạm vi nội dung:**
 
-Tập trung vào bài toán xác thực 1:N (Identification) trong môi trường kiểm soát cửa ra vào.
-
-Nghiên cứu kỹ thuật trích xuất đặc trưng (Feature Extraction) và so khớp vector (Vector Matching).
-
-Không đi sâu vào việc thiết kế mạch điện tử điều khiển khóa cửa (phần cứng), mà chỉ mô phỏng tín hiệu điều khiển qua phần mềm.
+   - Tập trung vào bài toán xác thực 1:N (Identification) trong môi trường kiểm soát cửa ra vào.
+   - Nghiên cứu kỹ thuật trích xuất đặc trưng (Feature Extraction) và so khớp vector (Vector Matching).
+   - Không đi sâu vào việc thiết kế mạch điện tử điều khiển khóa cửa (phần cứng), mà chỉ mô phỏng tín hiệu điều khiển qua phần mềm.
 
 3. **Phạm vi thực nghiệm:** Hệ thống được triển khai và đánh giá trên máy tính cá nhân chạy Windows/Linux và mô phỏng khả năng tích hợp trên các thiết bị nhúng như Raspberry Pi 4.
 
@@ -55,12 +53,15 @@ Hệ thống dựa trên hai mô hình Deep Learning tiên tiến từ OpenCV Zo
 - **Cơ chế:** YuNet sử dụng kiến trúc Feature Pyramid Network (FPN) để phát hiện khuôn mặt ở nhiều kích thước khác nhau.
 - **Đầu ra:** Trả về tọa độ khung bao (Bounding Box) và 5 điểm mốc quan trọng (Landmarks: mắt, mũi, miệng) cho mỗi khuôn mặt phát hiện được, cùng với độ tin cậy (Confidence Score).
 
-Đặc điểm,Haar Cascade,YuNet (CNN-based)
-Kiến trúc,Machine Learning cổ điển,Deep Neural Network (Lightweight)
-Độ chính xác,"Thấp, dễ bị sai khi nghiêng/che khuất","Cao, ổn định với góc nghiêng nhẹ"
-Tốc độ (CPU),Rất nhanh,Rất nhanh (tương đương hoặc hơn)
-Input size,"Cố định, cần Image Pyramid",Đa dạng (Scale-invariant)
-Khả năng,Chỉ phát hiện khuôn mặt,Phát hiện mặt + 5 điểm landmarks
+**So sánh YuNet và Haar Cascade:**
+
+| Đặc điểm         | Haar Cascade                          | YuNet (CNN-based)                 |
+| :--------------- | :------------------------------------ | :-------------------------------- |
+| **Kiến trúc**    | Machine Learning cổ điển              | Deep Neural Network (Lightweight) |
+| **Độ chính xác** | Thấp, dễ bị sai khi nghiêng/che khuất | Cao, ổn định với góc nghiêng nhẹ  |
+| **Tốc độ (CPU)** | Rất nhanh                             | Rất nhanh (tương đương hoặc hơn)  |
+| **Input size**   | Cố định, cần Image Pyramid            | Đa dạng (Scale-invariant)         |
+| **Khả năng**     | Chỉ phát hiện khuôn mặt               | Phát hiện mặt + 5 điểm landmarks  |
 
 ### 2.2. Nhận Diện Khuôn Mặt với SFace
 
@@ -70,7 +71,15 @@ Khả năng,Chỉ phát hiện khuôn mặt,Phát hiện mặt + 5 điểm landm
 - **Cơ chế:** Mô hình nhận đầu vào là ảnh khuôn mặt đã được cắt và chuẩn hóa (112x112 pixel), sau đó trích xuất thành một vector đặc trưng 512 chiều (Embedding Vector). Vector này là đại diện duy nhất cho khuôn mặt của mỗi người.
 - **So khớp:** Hệ thống sử dụng độ đo **Cosine Similarity** để so sánh vector của khuôn mặt hiện tại với các vector đã lưu trong database. Ngưỡng (Threshold) được thiết lập là **0.75**; nếu độ tương đồng lớn hơn ngưỡng này, hệ thống sẽ xác nhận danh tính người dùng.
 
-## Cơ sở toán học của phép đo tương đồng:Để xác định hai khuôn mặt có phải là một người hay không, hệ thống sử dụng độ đo Cosine Similarity giữa hai vector đặc trưng $\mathbf{A}$ (vector trong Database) và $\mathbf{B}$ (vector từ Camera). Công thức được định nghĩa như sau:$$\text{Cosine Similarity}(\mathbf{A}, \mathbf{B}) = \frac{\mathbf{A} \cdot \mathbf{B}}{\|\mathbf{A}\| \|\mathbf{B}\|} = \frac{\sum_{i=1}^{n} A_i B_i}{\sqrt{\sum_{i=1}^{n} A_i^2} \sqrt{\sum_{i=1}^{n} B_i^2}}$$
+### 2.3. Cơ sở toán học của phép đo tương đồng
+
+Để xác định hai khuôn mặt có phải là một người hay không, hệ thống sử dụng độ đo Cosine Similarity giữa hai vector đặc trưng $\mathbf{A}$ (vector trong Database) và $\mathbf{B}$ (vector từ Camera). Công thức được định nghĩa như sau:
+
+$$
+\text{Cosine Similarity}(\mathbf{A}, \mathbf{B}) = \frac{\mathbf{A} \cdot \mathbf{B}}{\|\mathbf{A}\| \|\mathbf{B}\|} = \frac{\sum_{i=1}^{n} A_i B_i}{\sqrt{\sum_{i=1}^{n} A_i^2} \sqrt{\sum_{i=1}^{n} B_i^2}}
+$$
+
+---
 
 ## CHƯƠNG 3: PHƯƠNG PHÁP LUẬN
 
@@ -200,37 +209,42 @@ flowchart TD
 
 Dữ liệu đặc trưng khuôn mặt không lưu dưới dạng ảnh thô (raw images) để đảm bảo tốc độ và bảo mật, mà được tuần tự hóa (serialized) thành file embeddings.pkl. Cấu trúc dữ liệu bên trong là một List chứa các Dictionary:
 
-Cấu trúc giả mã (Pseudo-code) của database
+_Cấu trúc giả mã (Pseudo-code) của database:_
+
+```python
 database = [
-{"name": "Nguyen Van A", "embedding": [0.12, -0.05, ..., 0.88]}, # Vector 512-float
-{"name": "Tran Thi B", "embedding": [-0.02, 0.45, ..., -0.11]},
-...
+    {"name": "Nguyen Van A", "embedding": [0.12, -0.05, ..., 0.88]}, # Vector 512-float
+    {"name": "Tran Thi B", "embedding": [-0.02, 0.45, ..., -0.11]},
+    # ...
 ]
+```
 
 #### 3.3.2. Cây thư mục dự án (Project Tree)
 
+```
 Face-Access-Control/
-├── dataset/ # Chứa ảnh thô dùng để training (được tạo bởi capture_dataset.py)
+├── dataset/            # Chứa ảnh thô dùng để training (được tạo bởi capture_dataset.py)
 ├── gui/
-│ ├── **init**.py
-│ └── main_window_gradio.py
+│   ├── __init__.py
+│   └── main_window_gradio.py
 ├── models/
-│ ├── yunet/
-│ │ └── face_detection_yunet_2023mar.onnx # Model YuNet
-│ └── sface/
-│ └── face_recognition_sface_2021dec.onnx # Model SFace
+│   ├── yunet/
+│   │   └── face_detection_yunet_2023mar.onnx
+│   └── sface/
+│       └── face_recognition_sface_2021dec.onnx
 ├── modules/
-│ ├── **init**.py
-│ ├── camera.py
-│ ├── database.py
-│ ├── detector_yunet.py
-│ └── recognizer_sface.py
+│   ├── __init__.py
+│   ├── camera.py
+│   ├── database.py
+│   ├── detector_yunet.py
+│   └── recognizer_sface.py
 ├── logs/
-│ └── access_log.csv # Lịch sử ra vào (Time, Name, Confidence)
-├── main.py # Chương trình chính
-├── capture_dataset.py # Module thu thập dữ liệu
-├── train_sface.py # Module huấn luyện (tạo file pkl)
-└── requirements.txt # Các thư viện phụ thuộc
+│   └── access_log.csv  # Lịch sử ra vào (Time, Name, Confidence)
+├── main.py             # Chương trình chính
+├── capture_dataset.py  # Module thu thập dữ liệu
+├── train_sface.py      # Module huấn luyện (tạo file pkl)
+└── requirements.txt    # Các thư viện phụ thuộc
+```
 
 ---
 
@@ -270,15 +284,16 @@ Khi chạy `main.py`, hệ thống hoạt động liên tục:
 ### 4.3. Kịch bản Kiểm thử
 
 Hệ thống đã trải qua quá trình kiểm thử hộp đen (Black-box testing) với các kịch bản mô phỏng điều kiện thực tế:
-Bảng 4.1: Kết quả kiểm thử chức năng
-STT,Kịch bản (Scenario),Dữ liệu đầu vào,Kỳ vọng (Expected),Kết quả thực tế (Actual),Đánh giá
-1,"Người dùng đã đăng ký, nhìn thẳng","Khuôn mặt chính diện, sáng rõ","Tên hiển thị đúng, Khung xanh, Log ghi nhận",Như kỳ vọng,Pass
-2,Người dùng chưa đăng ký (Người lạ),Khuôn mặt người lạ,"Hiển thị ""Unknown"", Khung đỏ, Cảnh báo",Như kỳ vọng,Pass
-3,Người dùng đeo khẩu trang,Che 50% khuôn mặt dưới,Cảnh báo hoặc nhận diện sai (do mất đặc trưng mũi/miệng),Không nhận diện được,Pass (Theo giới hạn thiết kế)
-4,Góc nghiêng quá lớn (>45 độ),Mặt quay sang trái/phải,Không phát hiện được mặt hoặc nhận diện sai,Tỉ lệ detect giảm còn 40%,Warning
-5,Nhiều người cùng lúc,"2 người (1 quen, 1 lạ)",Nhận diện đúng cả 2 người song song,"Nhận diện đúng, FPS giảm nhẹ",Pass
 
-###
+**Bảng 4.1: Kết quả kiểm thử chức năng**
+
+| STT | Kịch bản (Scenario)                | Dữ liệu đầu vào               | Kỳ vọng (Expected)                          | Kết quả thực tế (Actual)     | Đánh giá                 |
+| :-- | :--------------------------------- | :---------------------------- | :------------------------------------------ | :--------------------------- | :----------------------- |
+| 1   | Người dùng đã đăng ký, nhìn thẳng  | Khuôn mặt chính diện, sáng rõ | Tên hiển thị đúng, Khung xanh, Log ghi nhận | Như kỳ vọng                  | **Pass**                 |
+| 2   | Người dùng chưa đăng ký (Người lạ) | Khuôn mặt người lạ            | Hiển thị "Unknown", Khung đỏ, Cảnh báo      | Như kỳ vọng                  | **Pass**                 |
+| 3   | Người dùng đeo khẩu trang          | Che 50% khuôn mặt dưới        | Cảnh báo hoặc nhận diện sai                 | Không nhận diện được         | **Pass** (Theo giới hạn) |
+| 4   | Góc nghiêng quá lớn (>45 độ)       | Mặt quay sang trái/phải       | Không phát hiện hoặc nhận diện sai          | Tỉ lệ detect giảm còn 40%    | **Warning**              |
+| 5   | Nhiều người cùng lúc               | 2 người (1 quen, 1 lạ)        | Nhận diện đúng cả 2 người song song         | Nhận diện đúng, FPS giảm nhẹ | **Pass**                 |
 
 ---
 
@@ -297,7 +312,7 @@ Dự án đã xây dựng thành công một hệ thống Face Access Control ho
 Dù hoạt động tốt, hệ thống vẫn tồn tại một số hạn chế cần khắc phục:
 
 - **Điều kiện ánh sáng:** Độ chính xác giảm khi môi trường quá tối hoặc bị ngược sáng mạnh.
-- **Góc nghiêng:** YuNet thực tế khá mạnh, có thể detect được góc nghiêng lớn hơn, nhưng SFace (bước nhận diện) mới là khâu nhạy cảm với góc nghiêng. Khi mặt nghiêng quá 30-45 độ, việc alignment (căn chỉnh) sẽ kém chính xác dẫn đến vector đặc trưng bị sai lệch. Các góc nghiêng lớn có thể làm giảm khả năng nhận diện.
+- **Góc nghiêng:** YuNet thực tế khá mạnh choh phép detect được góc nghiêng lớn, nhưng SFace (bước nhận diện) rất nhạy cảm với góc nghiêng. Khi mặt nghiêng quá 30-45 độ, việc căn chỉnh (alignment) sẽ kém chính xác dẫn đến vector đặc trưng bị sai lệch, làm giảm khả năng nhận diện.
 - **Giả mạo (Spoofing):** Hệ thống hiện tại chưa tích hợp module chống giả mạo (Liveness Detection), do đó có thể bị qua mặt bằng cách sử dụng ảnh chụp hoặc video chất lượng cao của người dùng.
 
 ### 5.3. Hướng phát triển Tương lai
@@ -308,4 +323,4 @@ Dù hoạt động tốt, hệ thống vẫn tồn tại một số hạn chế 
 2.  **Web Interface:** Chuyển đổi giao diện desktop sang Web App (sử dụng Flask/Django hoặc Streamlit) để quản trị viên có thể giám sát từ xa qua mạng LAN/Internet.
 3.  **Cơ sở dữ liệu SQL:** Thay thế file pickle bằng cơ sở dữ liệu quan hệ (SQLite/MySQL) để quản lý hàng nghìn người dùng hiệu quả hơn và hỗ trợ truy vấn lịch sử nhanh chóng.
 4.  **Tối ưu hóa đa luồng:** Áp dụng Multithreading để tách biệt luồng đọc camera, luồng xử lý AI và luồng ghi log, giúp tăng cường FPS và độ mượt mà của hệ thống.
-5.  **Chống giả mạo (Anti-Spoofing / Liveness Detection):** Tích hợp thuật toán FAS (Face Anti-Spoofing) sử dụng phân tích kết cấu da (texture analysis) hoặc yêu cầu tương tác (active challenge: chớp mắt, cười) để loại bỏ tấn công bằng ảnh chụp/video replay.
+5.  **Chống giả mạo (Anti-Spoofing):** Tích hợp thuật toán FAS (Face Anti-Spoofing) sử dụng phân tích kết cấu da (texture analysis) hoặc yêu cầu tương tác (active challenge: chớp mắt, cười) để loại bỏ tấn công.
