@@ -16,7 +16,7 @@
 
 Trong kỷ nguyên công nghiệp 4.0, công nghệ sinh trắc học (biometrics) đang trở thành một phần không thể thiếu trong các hệ thống an ninh và kiểm soát truy cập hiện đại. Nhận diện khuôn mặt, với ưu điểm là phương thức xác thực không tiếp xúc (contactless) và tự nhiên, đang dần thay thế các phương thức truyền thống như thẻ từ hay mật khẩu, vốn dễ bị mất hoặc đánh cắp.
 
-Dự án **Face Access Control** được ra đời trong bối cảnh nhu cầu về một giải pháp kiểm soát ra vào chi phí thấp nhưng hiệu quả cao ngày càng tăng. Thay vì phụ thuộc vào các thiết bị chuyên dụng đắt tiền hoặc các hệ thống yêu cầu GPU mạnh mẽ, dự án tập trung khai thác sức mạnh của các thư viện mã nguồn mở tối ưu (OpenCV Zoo) và ngôn ngữ Python để triển khai trên các thiết bị phần cứng phổ thông (như Laptop cá nhân, Raspberry Pi), giúp công nghệ này dễ tiếp cận hơn với các doanh nghiệp vừa và nhỏ hoặc người dùng cá nhân.
+Dự án **Face Access Control** được ra đời trong bối cảnh nhu cầu về một giải pháp kiểm soát ra vào chi phí thấp nhưng hiệu quả cao ngày càng tăng. Thay vì phụ thuộc vào các thiết bị chuyên dụng đắt tiền hoặc các hệ thống yêu cầu GPU mạnh mẽ, dự án tập trung khai thác sức mạnh của các mô hình tối ưu từ kho lưu trữ OpenCV Zoo và ngôn ngữ Python để triển khai trên các thiết bị phần cứng phổ thông (như Laptop cá nhân, Raspberry Pi), giúp công nghệ này dễ tiếp cận hơn với các doanh nghiệp vừa và nhỏ hoặc người dùng cá nhân.
 
 ### 1.2. Mục tiêu của đề tài
 
@@ -35,7 +35,7 @@ Hệ thống dựa trên hai mô hình Deep Learning tiên tiến từ OpenCV Zo
 
 ### 2.1. Phát Hiện Khuôn Mặt với YuNet
 
-**YuNet** là mô hình đóng vai trò "mắt thần", giúp hệ thống định vị khuôn mặt trong khung hình.
+**YuNet** là mô hình đóng vai trò như "mắt thần", giúp hệ thống định vị khuôn mặt trong khung hình.
 
 - **Đặc điểm kỹ thuật:** Đây là mô hình ultra-lightweight dựa trên mạng CNN (Convolutional Neural Network), được tinh giản cấu trúc để đạt tốc độ xử lý cực nhanh (>60 FPS trên CPU).
 - **Cơ chế:** YuNet sử dụng kiến trúc Feature Pyramid Network (FPN) để phát hiện khuôn mặt ở nhiều kích thước khác nhau.
@@ -69,20 +69,20 @@ Hệ thống được chia thành 3 khối chính:
 
 ```mermaid
 graph TD
-    User[Người Dùng] -->|Camera| Stream[Video Stream]
+    User[Người Dùng] -->|Camera| Stream[Luồng Video]
 
-    subgraph "Processing Core"
-        Stream --> Detect[YuNet Detection]
-        Detect -->|Cropped Face| Recog[SFace Recognition]
-        Recog -->|512-d Vector| Match[Cosine Matching]
+    subgraph "Khối Xử Lý Trung Tâm"
+        Stream --> Detect[Phát hiện mặt (YuNet)]
+        Detect -->|Ảnh mặt đã cắt| Recog[Trích xuất đặc trưng (SFace)]
+        Recog -->|Vector 512 chiều| Match[So khớp Cosine]
     end
 
-    subgraph "Database"
-        Encodings[(Embeddings.pkl)] --> Match
+    subgraph "Cơ Sở Dữ Liệu"
+        Encodings[(File Embeddings.pkl)] --> Match
     end
 
-    Match -->|Result > 0.75| Action[Log & Unlock]
-    Match -->|Result < 0.75| Unknown[Alert Unknown]
+    Match -->|Kết quả > 0.75| Action[Ghi Log & Mở khóa]
+    Match -->|Kết quả < 0.75| Unknown[Cảnh báo Người lạ]
 ```
 
 ### 3.2. Các Lưu Đồ Thuật Toán (Flowcharts)
@@ -104,12 +104,12 @@ flowchart TD
     Detect -- Có --> Save[Lưu Ảnh vào Thư mục]
     Save --> Count{Đủ 50 ảnh?}
 
-    Count -- No --> Show
-    Count -- Yes --> End([Kết Thúc])
+    Count -- Chưa --> Show
+    Count -- Rồi --> End([Kết Thúc])
 
-    Show --> Key{Nhấn 'q'?}
-    Key -- No --> Capture
-    Key -- Yes --> End
+    Show --> Key{Nhấn 'q' để thoát?}
+    Key -- Không --> Capture
+    Key -- Có --> End
 ```
 
 #### B. Lưu Đồ Huấn luyện Mô hình (Training Flowchart)
@@ -122,23 +122,23 @@ flowchart TD
     LoadModels --> ScanDirs[Quét Thư mục Dataset]
 
     ScanDirs --> LoopUser[Lặp qua từng User]
-    LoopUser --> LoopImg[Lặp qua từng Anh]
+    LoopUser --> LoopImg[Lặp qua từng Ảnh]
 
-    LoopImg --> Detect[YuNet: Detect Face]
-    Detect --> Crop[Crop & Resize 112x112]
+    LoopImg --> Detect[YuNet: Phát hiện mặt]
+    Detect --> Crop[Cắt & Resize 112x112]
 
     Crop --> Quality{Chất lượng OK?}
-    Quality -- No (Mờ/Tối) --> LoopImg
-    Quality -- Yes --> Extract[SFace: Trích xuất Vector]
+    Quality -- Không (Mờ/Tối) --> LoopImg
+    Quality -- Có --> Extract[SFace: Trích xuất Vector]
 
     Extract --> AddList[Thêm vào Danh Sách]
-    AddList --> NextImg{Hết ảnh?}
+    AddList --> NextImg{Hết ảnh của User?}
 
-    NextImg -- No --> LoopImg
-    NextImg -- Yes --> NextUser{Hết User?}
+    NextImg -- Chưa --> LoopImg
+    NextImg -- Rồi --> NextUser{Hết User?}
 
-    NextUser -- No --> LoopUser
-    NextUser -- Yes --> SaveDB[Lưu vào embeddings.pkl]
+    NextUser -- Chưa --> LoopUser
+    NextUser -- Rồi --> SaveDB[Lưu vào embeddings.pkl]
     SaveDB --> End([Hoàn Thành])
 ```
 
@@ -148,26 +148,27 @@ Dưới đây là sơ đồ luồng xử lý của hệ thống trong quá trìn
 
 ```mermaid
 flowchart TD
-    Start([Start System]) --> Init[Load Models & DB]
-    Init --> Loop{Main Loop}
+    Start([Khởi động Hệ thống]) --> Init[Load Models & Database]
+    Init --> Loop{Vòng lặp chính}
 
-    Loop --> Capture[Read Frame]
-    Capture --> Detect{Face Detected?}
+    Loop --> Capture[Đọc Frame từ Camera]
+    Capture --> Detect{Phát hiện mặt?}
 
-    Detect -- No --> Draw[Display Frame]
-    Detect -- Yes --> ProcessFace[Crop & Align Face]
+    Detect -- Không --> Draw[Hiển thị Frame]
+    Detect -- Có --> ProcessFace[Cắt & Căn chỉnh mặt]
 
-    ProcessFace --> Extract[SFace: Extract Embedding]
-    Extract --> Compare[Compare with DB (Cosine)]
+    ProcessFace --> Extract[SFace: Trích xuất Vector]
+    Extract --> Compare[So sánh với DB (Cosine)]
 
-    Compare --> Threshold{Score > 0.75?}
+    Compare --> Threshold{Độ tương đồng > 0.75?}
 
-    Threshold -- Yes --> Identify[ID: Known User]
-    Threshold -- No --> Stranger[ID: Unknown]
+    Threshold -- Có --> Identify[ID: Người quen]
+    Threshold -- Không --> Stranger[ID: Người lạ]
 
-    Identify --> Log[Save Access Log]
+    Identify --> Log[Ghi Log truy cập]
     Stranger --> Draw
-    Log --> Draw
+    Log --> Unlock[Mở khóa / Thông báo]
+    Unlock --> Draw
 
     Draw --> Loop
 ```
@@ -224,7 +225,7 @@ Dự án đã xây dựng thành công một hệ thống Face Access Control ho
 Dù hoạt động tốt, hệ thống vẫn tồn tại một số hạn chế cần khắc phục:
 
 - **Điều kiện ánh sáng:** Độ chính xác giảm khi môi trường quá tối hoặc bị ngược sáng mạnh.
-- **Góc nghiêng:** YuNet và SFace hoạt động tốt nhất với góc mặt chính diện hoặc nghiêng nhẹ (<30 độ). Các góc nghiêng lớn có thể làm giảm khả năng nhận diện.
+- **Góc nghiêng:** YuNet thực tế khá mạnh, có thể detect được góc nghiêng lớn hơn, nhưng SFace (bước nhận diện) mới là khâu nhạy cảm với góc nghiêng. Khi mặt nghiêng quá 30-45 độ, việc alignment (căn chỉnh) sẽ kém chính xác dẫn đến vector đặc trưng bị sai lệch. Các góc nghiêng lớn có thể làm giảm khả năng nhận diện.
 - **Giả mạo (Spoofing):** Hệ thống hiện tại chưa tích hợp module chống giả mạo (Liveness Detection), do đó có thể bị qua mặt bằng cách sử dụng ảnh chụp hoặc video chất lượng cao của người dùng.
 
 ### 5.3. Hướng phát triển Tương lai
