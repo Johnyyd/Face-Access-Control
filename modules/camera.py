@@ -6,7 +6,25 @@ Quản lý webcam: mở, đọc frame, đóng camera
 import cv2
 import numpy as np
 from typing import Tuple, Optional
-import config
+import sys
+import os
+
+# Thêm thư mục gốc vào sys.path để import config
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+try:
+    import config
+except ImportError:
+    # Fallback config nếu không tìm thấy file config.py
+    class ConfigFallback:
+        CAMERA_ID = 0
+        CAMERA_WIDTH = 640
+        CAMERA_HEIGHT = 480
+        CAMERA_FPS = 30
+        DEBUG = True
+    
+    config = ConfigFallback()
+    print("[CameraManager] Warning: Using fallback config")
 
 
 class CameraManager:
