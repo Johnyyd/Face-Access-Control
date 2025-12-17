@@ -158,7 +158,7 @@ flowchart TD
     Detect -- Có --> ProcessFace[Cắt & Căn chỉnh mặt]
 
     ProcessFace --> Extract[SFace: Trích xuất Vector]
-    Extract --> Compare[So sánh với DB (Cosine)]
+    Extract --> Compare["So sánh với DB (Cosine)"]
 
     Compare --> Threshold{Độ tương đồng > 0.75?}
 
