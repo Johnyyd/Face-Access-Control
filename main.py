@@ -67,21 +67,49 @@ def main():
         # Phát hiện khuôn mặt
         boxes = detector.detect(frame)
         
-        if boxes:
-            detection_count += 1
-            
-            # Log vào database (tạm thời chỉ ghi thông tin đơn giản)
-            if frame_count % 30 == 0:  # Mỗi 30 frames log 1 lần
-                for i, (x, y, w, h) in enumerate(boxes):
-                    db.log_access(
-                        name=f"Detected_Face_{i}",
-                        method=detector_method.upper(),
-                        confidence=0.95,
-                        status="DETECTED"
-                    )
+        # FIX: Chuyển numpy array sang list nếu cần
+        if hasattr(boxes, 'size'):  # Nếu là numpy array
+            if boxes.size > 0:
+                boxes_list = boxes.tolist()  # Chuyển sang list
+                detection_count += 1
+                
+                # Log vào database (tạm thời chỉ ghi thông tin đơn giản)
+                if frame_count % 30 == 0:  # Mỗi 30 frames log 1 lần
+                    for i, box in enumerate(boxes):
+                        db.log_access(
+                            name=f"Detected_Face_{i}",
+                            method=detector_method.upper(),
+                            confidence=0.95,
+                            status="DETECTED"
+                        )
+            else:
+                boxes_list = []
+        else:
+            # Nếu đã là list
+            if len(boxes) > 0:
+                boxes_list = boxes
+                detection_count += 1
+                
+                # Log vào database
+                if frame_count % 30 == 0:
+                    for i, box in enumerate(boxes):
+                        db.log_access(
+                            name=f"Detected_Face_{i}",
+                            method=detector_method.upper(),
+                            confidence=0.95,
+                            status="DETECTED"
+                        )
+            else:
+                boxes_list = []
         
         # Vẽ bounding boxes
-        for (x, y, w, h) in boxes:
+        for box in boxes_list:
+            # Haar Cascade trả về (x, y, w, h)
+            if len(box) == 4:
+                x, y, w, h = box
+            else:
+                continue  # Bỏ qua nếu không đúng định dạng
+            
             # Vẽ rectangle
             cv2.rectangle(frame, 
                          (x, y), 
@@ -102,6 +130,11 @@ def main():
         # Hiển thị tên phương pháp
         method_text = f"Method: {detector_method.upper()}"
         cv2.putText(frame, method_text, (10, 60),
+                   cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+        
+        # Thông tin faces detected
+        faces_text = f"Faces: {len(boxes_list)}"
+        cv2.putText(frame, faces_text, (10, 90),
                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
         
         # Resize cửa sổ nếu cần
@@ -125,9 +158,15 @@ def main():
         elif key == ord('s'):
             # Chụp ảnh hiện tại
             timestamp = cv2.getTickCount()
-            filename = f"capture_{timestamp}.jpg"
+            filename = f"captures/capture_{timestamp}.jpg"
             cv2.imwrite(filename, frame)
             print(f"\n📸 Đã lưu ảnh: {filename}")
+        elif key == ord('c'):
+            # Clear screen
+            print("\n" * 3)
+            print("-" * 50)
+            print("Đã xóa màn hình console")
+            print("-" * 50)
     
     # Giải phóng tài nguyên
     cam.release()
