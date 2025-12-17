@@ -1,39 +1,82 @@
-# Main application entry point
+"""
+Face Access Control - MAIN
+Chạy camera + detect face trên realtime.
+"""
+
 import cv2
-from detector import FaceDetector
-from recognizer_lbph import LBPHRecognizer
-from recognizer_facenet import FaceNetRecognizer
-from config import CAMERA_ID
+from modules.camera import CameraManager
+from modules.detector import FaceDetector
+from modules.database import Database
+import time
 
-det = FaceDetector()
-lbph = LBPHRecognizer()
-facenet = FaceNetRecognizer()
+def main():
 
-cam = cv2.VideoCapture(CAMERA_ID)
+    print("⭐ SYSTEM STARTING ⭐")
 
-while True:
-    ret, frame = cam.read()
-    if not ret:
-        break
+    # ====== Khởi tạo camera ======
+    camera = CameraManager()
 
-    boxes = det.detect(frame)
+    if not camera.open():
+        print("❌ Camera không mở được")
+        return
 
-    for (x,y,w,h) in boxes:
-        face = frame[y:y+h, x:x+w]
+    print("✔ Camera opened!")
 
-        nameF, dist = facenet.predict(face)
-        nameL, conf = lbph.predict(face)
+    # ====== Detector ======
+    detector = FaceDetector(method="dnn")
+    print("✔ Detector loaded!")
 
-        text = f"{nameF}"
+    # ====== Database ======
+    db = Database()
+    print("✔ Database loaded!")
 
-        cv2.rectangle(frame,(x,y),(x+w,y+h),(0,255,0),2)
-        cv2.putText(frame, text,(x,y-5),
-            cv2.FONT_HERSHEY_SIMPLEX,0.8,(255,0,0),2)
+    # ====== Main loop realtime ======
+    while True:
 
-    cv2.imshow("FACE ACCESS", frame)
+        ret, frame = camera.read()
+        if not ret:
+            print("Camera mất frame")
+            break
 
-    if cv2.waitKey(1) == 27:
-        break
+        # Detect face
+        boxes = detector.detect(frame)
 
-cam.release()
-cv2.destroyAllWindows()
+        # Vẽ bounding box
+        for (x, y, w, h) in boxes:
+            cv2.rectangle(
+                frame,
+                (x, y),
+                (x + w, y + h),
+                (0, 255, 0),
+                2
+            )
+
+        # Hiển thị số mặt tìm thấy
+        cv2.putText(
+            frame,
+            f"Detected: {len(boxes)}",
+            (10, 40),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1,
+            (0, 255, 0),
+            2
+        )
+
+        # Show image
+        cv2.imshow("FACE ACCESS CONTROL", frame)
+
+        # Nhấn Q để thoát
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+        time.sleep(0.01)
+
+    # Shutdown
+    camera.release()
+    cv2.destroyAllWindows()
+    print("⭐ SYSTEM CLOSED ⭐")
+
+
+# ======================================================
+if __name__ == "__main__":
+    main()
