@@ -53,15 +53,17 @@ class CameraManager:
             height: Chiều cao frame (mặc định từ config)
             fps: Frames per second (mặc định từ config)
         """
-        self.camera_id = camera_id if camera_id is not None else config.CAMERA_ID
-        self.width = width if width is not None else config.CAMERA_WIDTH
-        self.height = height if height is not None else config.CAMERA_HEIGHT
-        self.fps = fps if fps is not None else config.CAMERA_FPS
+        # Sử dụng getattr để lấy giá trị an toàn
+        self.camera_id = camera_id if camera_id is not None else getattr(config, 'CAMERA_ID', 0)
+        self.width = width if width is not None else getattr(config, 'CAMERA_WIDTH', 640)
+        self.height = height if height is not None else getattr(config, 'CAMERA_HEIGHT', 480)
+        self.fps = fps if fps is not None else getattr(config, 'CAMERA_FPS', 30)
         
         self.cap: Optional[cv2.VideoCapture] = None
         self.is_opened_flag = False
         
-        if config.DEBUG:
+        debug_mode = getattr(config, 'DEBUG', True)
+        if debug_mode:
             print(f"[CameraManager] Initialized with camera_id={self.camera_id}, "
                   f"resolution={self.width}x{self.height}, fps={self.fps}")
     
