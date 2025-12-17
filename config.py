@@ -43,7 +43,7 @@ SFACE_EMBEDDINGS_PATH = os.path.join(MODELS_DIR, "sface/embeddings.pkl")
 
 # SFace Parameters
 SFACE_EMBEDDING_SIZE = 512  # SFace tạo vector 512 chiều
-SFACE_THRESHOLD = 0.6  # Cosine Similarity threshold (higher is stricter, max 1.0)
+SFACE_THRESHOLD = 0.75  # Cosine Similarity threshold (higher is stricter, max 1.0)
 
 # ==================== CẤU HÌNH RECOGNITION CHUNG ====================
 
